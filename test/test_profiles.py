@@ -39,6 +39,16 @@ class TestCooccurrenceProbabilityProfile(unittest.TestCase):
         reference_profile.df.sort_index(inplace=True)
         self.assertTrue(p.df.equals(reference_profile.df))
 
+    def test_cooccurrence_probability_calculation_explicit_count(self):
+        reference_profile = CooccurrenceProbabilityProfile(DataFrame.from_dict(COOCCURRENCE_PROBABILITIES,
+                                                                               orient='index', columns=['probability']))
+        reference_profile.df = reference_profile.df.divide(10)
+        p = CooccurrenceProbabilityProfile.from_cooccurrence_profile(
+            CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES), vector_count=len(FEATURE_TUPLES)*10)
+        p.df.sort_index(inplace=True)
+        reference_profile.df.sort_index(inplace=True)
+        self.assertTrue(p.df.equals(reference_profile.df))
+
 
 if __name__ == '__main__':
     unittest.main()
