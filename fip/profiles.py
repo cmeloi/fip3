@@ -1,11 +1,23 @@
 from collections import Counter
-from pandas import DataFrame
+
+import pandas
 
 
 class InterrelationProfile:
-    def __init__(self, df, **kwargs):
+    def __init__(self, df, *args, **kwargs):
         self.df = df
+        self.args = args
         self.attrs = kwargs
+        self.imputations = {'best-case': 0}  # TODO: implement best-case imputation
+
+    def get_feature_relation(self, f1, f2, imputation='best-case'):
+        try:
+            if f1 <= f2:
+                return self.df.loc[f1, f2]['value']
+            else:
+                return self.df.loc[f2, f1]['value']
+        except KeyError:
+            return self.imputations.get(imputation, pandas.NA)
 
 
 class CooccurrenceProfile(InterrelationProfile):
@@ -16,17 +28,19 @@ class CooccurrenceProfile(InterrelationProfile):
         for feature_list in feature_lists:
             cooccurrence_counter.update(CooccurrenceProfile._features2cooccurrences(feature_list))
             processed_lists += 1
-        df = DataFrame.from_dict(cooccurrence_counter, orient='index', columns=['count'])
+        df = pandas.DataFrame(((features[0], features[1], value)
+                               for features, value in cooccurrence_counter.items()),
+                              columns=['feature1', 'feature2', 'value'])
+        df.set_index(['feature1', 'feature2'], inplace=True)
         return cls(df, vector_count=processed_lists)
 
     @staticmethod
-    def _features2cooccurrences(features, delimiter='|'):
+    def _features2cooccurrences(features):
         features = list(set(features))  # get rid of duplicates
         features.sort()
         for i, feature in enumerate(features):
-            feature = feature.replace(delimiter, '')
             for other_feature in features[i:]:
-                yield f"{feature}{delimiter}{other_feature.replace(delimiter, '')}"
+                yield str(feature), str(other_feature)
 
 
 class CooccurrenceProbabilityProfile(InterrelationProfile):
@@ -37,8 +51,7 @@ class CooccurrenceProbabilityProfile(InterrelationProfile):
         The count is either explicitly provided through the vector_count kwarg, or inferred from
         the cooccurrence_profile.attrs['vector_count'] or, failing that, as a max of its 'count' column"""
         if not vector_count:
-            vector_count = cooccurrence_profile.attrs.get('vector_count', cooccurrence_profile.df['count'].max())
+            vector_count = cooccurrence_profile.attrs.get('vector_count', cooccurrence_profile.df['value'].max())
         df = cooccurrence_profile.df.divide(vector_count)
-        df.rename(columns={'count': 'probability'}, inplace=True)
         kwargs['vector_count'] = vector_count
-        return cls(df, **kwargs)
+        return cls(df, *args, **kwargs)
