@@ -1,6 +1,14 @@
 from collections import Counter
 
 import pandas
+import numpy
+
+
+def generate_profile_pair_for_feature(iterable, feature):
+    """Generates and returns two CooccurrenceProbabilityProfile instances from the provided iterable,
+    and the provided feature. Returns main profile from feature vectors containing the given feature,
+    and a reference profile from all other feature vectors"""
+    raise NotImplementedError
 
 
 class InterrelationProfile:
@@ -54,4 +62,18 @@ class CooccurrenceProbabilityProfile(InterrelationProfile):
             vector_count = cooccurrence_profile.attrs.get('vector_count', cooccurrence_profile.df['value'].max())
         df = cooccurrence_profile.df.divide(vector_count)
         kwargs['vector_count'] = vector_count
+        return cls(df, *args, **kwargs)
+
+
+class PointwiseMutualInformationProfile(InterrelationProfile):
+    @classmethod
+    def from_cooccurrence_probability_profile(cls, cooccurrence_probability_profile,
+                                              *args, vector_count=None, **kwargs):
+        kwargs['vector_count'] = vector_count
+        standalone_probabilities = {feature: cooccurrence_probability_profile.df.loc[feature, feature]['value']
+                                    for feature, feature2 in cooccurrence_probability_profile.df.index.values}
+        df = cooccurrence_probability_profile.df.apply(
+            lambda x: numpy.log2(x/(standalone_probabilities[x.name[0]]*standalone_probabilities[x.name[1]]))
+            if x.name[0] != x.name[1] else x*0,
+            axis=1)  # the if/else clause because P(A AND A) = P(A), not P(A)*P(A). And log2(P(A)/P(A)) = log2(1) = 0
         return cls(df, *args, **kwargs)

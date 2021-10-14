@@ -2,15 +2,18 @@ import unittest
 
 from pandas import DataFrame
 
-from fip.profiles import CooccurrenceProfile, CooccurrenceProbabilityProfile
-
+from fip.profiles import *
 
 FEATURE_TUPLES = (('a', 'b', 'c', 'd'), ('a', 'b', 'x'), ('c', 'd'))
 COOCCURRENCE_COUNTS = {('a', 'a'): 2, ('a', 'b'): 2, ('a', 'c'): 1, ('a', 'd'): 1, ('a', 'x'): 1,
                        ('b', 'b'): 2, ('b', 'c'): 1, ('b', 'd'): 1, ('b', 'x'): 1,
                        ('c', 'c'): 2, ('c', 'd'): 2, ('d', 'd'): 2, ('x', 'x'): 1}
-COOCCURRENCE_PROBABILITIES = {cooccurrence: float(count)/len(FEATURE_TUPLES)
+COOCCURRENCE_PROBABILITIES = {cooccurrence: float(count) / len(FEATURE_TUPLES)
                               for cooccurrence, count in COOCCURRENCE_COUNTS.items()}
+COOCCURRENCE_PMI = {cooccurrence: numpy.log2(probability / (
+        COOCCURRENCE_PROBABILITIES[(cooccurrence[0], cooccurrence[0])] *
+        COOCCURRENCE_PROBABILITIES[(cooccurrence[1], cooccurrence[1])])) if cooccurrence[0] != cooccurrence[1] else 0
+                    for cooccurrence, probability in COOCCURRENCE_PROBABILITIES.items()}
 
 
 class TestCooccurrenceProfile(unittest.TestCase):
@@ -50,9 +53,20 @@ class TestCooccurrenceProbabilityProfile(unittest.TestCase):
                                                                                orient='index', columns=['value']))
         reference_profile.df = reference_profile.df.divide(10)
         p = CooccurrenceProbabilityProfile.from_cooccurrence_profile(
-            CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES), vector_count=len(FEATURE_TUPLES)*10)
+            CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES), vector_count=len(FEATURE_TUPLES) * 10)
         p.df.sort_index(inplace=True)
         reference_profile.df.sort_index(inplace=True)
+        self.assertTrue(p.df.equals(reference_profile.df))
+
+
+class TestPointwiseMutualInformationProfile(unittest.TestCase):
+    def test_pmi_calculation(self):
+        reference_profile = PointwiseMutualInformationProfile(DataFrame.from_dict(COOCCURRENCE_PMI, orient='index', columns=['value']))
+        reference_profile.df.sort_index(inplace=True)
+        p = PointwiseMutualInformationProfile.from_cooccurrence_probability_profile(
+            CooccurrenceProbabilityProfile.from_cooccurrence_profile(
+                CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES)))
+        p.df.sort_index(inplace=True)
         self.assertTrue(p.df.equals(reference_profile.df))
 
 
