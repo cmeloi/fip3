@@ -103,3 +103,9 @@ class PointwiseMutualInformationProfile(InterrelationProfile):
             if x.name[0] != x.name[1] else x * 0,
             axis=1)  # the if/else clause because P(A AND A) = P(A), not P(A)*P(A). And log2(P(A)/P(A)) = log2(1) = 0
         return cls(df, *args, **kwargs)
+
+
+class PointwiseKLDivergenceProfile(InterrelationProfile):
+    @classmethod
+    def from_cooccurrence_probability_profiles(cls, cooccurrence_probability_profile, reference_probability_profile):
+        pass
