@@ -28,7 +28,7 @@ class TestCooccurrenceProfile(unittest.TestCase):
     def test_features2cooccurrences(self):
         features = ('c', 'a', 'b', 'a')
         reference_cooccurrences = {('a', 'a'), ('a', 'b'), ('a', 'c'), ('b', 'b'), ('b', 'c'), ('c', 'c')}
-        cooccurrences = set(CooccurrenceProfile._features2cooccurrences(features))
+        cooccurrences = set(CooccurrenceProfile.features2cooccurrences(features))
         self.assertSetEqual(cooccurrences, reference_cooccurrences)
 
     def test_get_feature_relation(self):
@@ -36,6 +36,38 @@ class TestCooccurrenceProfile(unittest.TestCase):
         for feature_tuple, count in COOCCURRENCE_COUNTS.items():
             self.assertEqual(p.get_feature_relation(feature_tuple[0], feature_tuple[1]), count)
             self.assertEqual(p.get_feature_relation(feature_tuple[1], feature_tuple[0]), count)
+
+    def test_add(self):
+        p_cooccurrence_counts = dict(COOCCURRENCE_COUNTS)
+        p_cooccurrence_counts.update({('y', 'y'): 1})
+        q_cooccurrence_counts = dict(COOCCURRENCE_COUNTS)
+        q_cooccurrence_counts.update({('z', 'z'): 2})
+        p = CooccurrenceProfile.from_dict(p_cooccurrence_counts, vector_count=4) +\
+            CooccurrenceProfile.from_dict(q_cooccurrence_counts, vector_count=5)
+        r_cooccurrence_counts = {key: value*2 for key, value in COOCCURRENCE_COUNTS.items()}
+        r_cooccurrence_counts.update({('y', 'y'): 1, ('z', 'z'): 2})
+        reference_profile = CooccurrenceProfile.from_dict(r_cooccurrence_counts, vector_count=9)
+        self.assertEqual(p.attrs['vector_count'], reference_profile.attrs['vector_count'])
+        p.df.sort_index(inplace=True)
+        reference_profile.df.sort_index(inplace=True)
+        self.assertTrue(p.df.equals(reference_profile.df))
+
+    def test_generate_profile_pair_for_feature(self):
+        positive_profile, negative_profile = CooccurrenceProfile.from_feature_lists_split_on_feature(
+            FEATURE_TUPLES, 'x')
+        positive_tuples = [tup for tup in FEATURE_TUPLES if 'x' in tup]
+        negative_tuples = [tup for tup in FEATURE_TUPLES if 'x' not in tup]
+        self.assertEqual(positive_profile.attrs['vector_count'], len(positive_tuples))
+        self.assertEqual(negative_profile.attrs['vector_count'], len(negative_tuples))
+        reference_positive_profile = CooccurrenceProfile.from_feature_lists(positive_tuples)
+        reference_negative_profile = CooccurrenceProfile.from_feature_lists(negative_tuples)
+        self.assertTrue(positive_profile.df.equals(reference_positive_profile.df))
+        self.assertTrue(negative_profile.df.equals(reference_negative_profile.df))
+        combined_profile = positive_profile + negative_profile
+        reference_combined_profile = CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES)
+        combined_profile.df.sort_index(inplace=True)
+        reference_combined_profile.df.sort_index(inplace=True)
+        self.assertTrue(combined_profile.df.equals(reference_combined_profile.df))
 
 
 class TestCooccurrenceProbabilityProfile(unittest.TestCase):
