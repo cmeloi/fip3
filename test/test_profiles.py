@@ -102,5 +102,23 @@ class TestPointwiseMutualInformationProfile(unittest.TestCase):
         self.assertTrue(p.df.equals(reference_profile.df))
 
 
+class TestPointwiseKLDivergenceProfile(unittest.TestCase):
+    def test_pointwise_kld_calculation(self):
+        cpp1 = CooccurrenceProbabilityProfile.from_cooccurrence_profile(
+                CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES))
+        p = PointwiseKLDivergenceProfile.from_cooccurrence_probability_profiles(cpp1, cpp1)
+        self.assertTrue((p.df['value'] == 0).all(), "KL divergence with itself should be 0")
+        p = PointwiseKLDivergenceProfile.from_cooccurrence_probability_profiles(
+            cpp1,
+            CooccurrenceProbabilityProfile.from_cooccurrence_profile(
+                CooccurrenceProfile.from_feature_lists([])))
+        self.assertTrue(p.df.empty, "Features missing in the reference profile should not be considered.")
+        p = PointwiseKLDivergenceProfile.from_cooccurrence_probability_profiles(
+            cpp1,
+            CooccurrenceProbabilityProfile.from_cooccurrence_profile(
+                CooccurrenceProfile.from_feature_lists([('a', 'b')])))
+        self.assertEqual(p.get_feature_relation('a', 'b'), np.log2(2.0/3))
+
+
 if __name__ == '__main__':
     unittest.main()

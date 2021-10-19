@@ -1,5 +1,6 @@
 from collections import Counter
 
+import numpy as np
 import pandas
 import numpy
 
@@ -20,14 +21,17 @@ class InterrelationProfile:
         df.set_index(['feature1', 'feature2'], inplace=True)
         return cls(df, *args, **kwargs)
 
-    def get_feature_relation(self, f1, f2):
+    def get_feature_relation(self, f1, f2, *args, imputation=True):
         try:
             if f1 <= f2:
                 return self.df.loc[f1, f2]['value']
             else:
                 return self.df.loc[f2, f1]['value']
         except KeyError:
-            return self.attrs['imputation_value']
+            if imputation:
+                return self.attrs['imputation_value']
+            else:
+                return np.NaN
 
 
 class CooccurrenceProfile(InterrelationProfile):
@@ -107,5 +111,12 @@ class PointwiseMutualInformationProfile(InterrelationProfile):
 
 class PointwiseKLDivergenceProfile(InterrelationProfile):
     @classmethod
-    def from_cooccurrence_probability_profiles(cls, cooccurrence_probability_profile, reference_probability_profile):
-        pass
+    def from_cooccurrence_probability_profiles(cls, cooccurrence_probability_profile, reference_probability_profile,
+                                               *args, vector_count=None, **kwargs):
+        kwargs['vector_count'] = vector_count
+        df = cooccurrence_probability_profile.df.apply(
+            lambda x: numpy.log2(x / reference_probability_profile.get_feature_relation(x.name[0], x.name[1],
+                                                                                        imputation=False)),
+            axis=1)
+        df.dropna(inplace=True)
+        return cls(df, *args, **kwargs)
