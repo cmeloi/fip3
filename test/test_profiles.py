@@ -34,8 +34,8 @@ class TestCooccurrenceProfile(unittest.TestCase):
     def test_get_feature_relation(self):
         p = CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES)
         for feature_tuple, count in COOCCURRENCE_COUNTS.items():
-            self.assertEqual(p.get_feature_relation(feature_tuple[0], feature_tuple[1]), count)
-            self.assertEqual(p.get_feature_relation(feature_tuple[1], feature_tuple[0]), count)
+            self.assertEqual(p.interrelation_value(feature_tuple[0], feature_tuple[1]), count)
+            self.assertEqual(p.interrelation_value(feature_tuple[1], feature_tuple[0]), count)
 
     def test_add(self):
         p_cooccurrence_counts = dict(COOCCURRENCE_COUNTS)
@@ -93,7 +93,8 @@ class TestCooccurrenceProbabilityProfile(unittest.TestCase):
 
 class TestPointwiseMutualInformationProfile(unittest.TestCase):
     def test_pmi_calculation(self):
-        reference_profile = PointwiseMutualInformationProfile(DataFrame.from_dict(COOCCURRENCE_PMI, orient='index', columns=['value']))
+        reference_profile = PointwiseMutualInformationProfile(DataFrame.from_dict(COOCCURRENCE_PMI,
+                                                                                  orient='index', columns=['value']))
         reference_profile.df.sort_index(inplace=True)
         p = PointwiseMutualInformationProfile.from_cooccurrence_probability_profile(
             CooccurrenceProbabilityProfile.from_cooccurrence_profile(
@@ -117,7 +118,7 @@ class TestPointwiseKLDivergenceProfile(unittest.TestCase):
             cpp1,
             CooccurrenceProbabilityProfile.from_cooccurrence_profile(
                 CooccurrenceProfile.from_feature_lists([('a', 'b')])))
-        self.assertEqual(p.get_feature_relation('a', 'b'), np.log2(2.0/3))
+        self.assertEqual(p.interrelation_value('a', 'b'), np.log2(2.0 / 3))
 
 
 if __name__ == '__main__':

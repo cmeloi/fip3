@@ -6,12 +6,12 @@ import numpy
 
 
 class InterrelationProfile:
-    def __init__(self, df, *args, **kwargs):
+    def __init__(self, df, *, imputation=False, zscore=False, **kwargs):
         self.df = df
-        self.args = args
         self.attrs = kwargs
-        if 'imputation_value' not in self.attrs.keys():
-            self.attrs['imputation_value'] = 0
+        self.imputation = imputation
+        if zscore:
+            self.convert_to_zscore()
 
     @classmethod
     def from_dict(cls, value_dict, *args, **kwargs):
@@ -21,17 +21,72 @@ class InterrelationProfile:
         df.set_index(['feature1', 'feature2'], inplace=True)
         return cls(df, *args, **kwargs)
 
-    def get_feature_relation(self, f1, f2, *args, imputation=True):
+    @staticmethod
+    def features2cooccurrences(features, *, omit_self_relations=False):
+        features = list(set(features))  # get rid of duplicates
+        features.sort()
+        for i, feature in enumerate(features):
+            if omit_self_relations:
+                for other_feature in features[i+1:]:
+                    yield str(feature), str(other_feature)
+            else:
+                for other_feature in features[i:]:
+                    yield str(feature), str(other_feature)
+
+    def convert_to_zscore(self):
+        self.df = (self.df - self.mean_interrelation_value()) / self.standard_interrelation_deviation()
+
+    def interrelation_value(self, f1, f2):
         try:
             if f1 <= f2:
                 return self.df.loc[f1, f2]['value']
             else:
                 return self.df.loc[f2, f1]['value']
         except KeyError:
-            if imputation:
-                return self.attrs['imputation_value']
+            if self.imputation:
+                return self._get_imputation_value(f1, f2)
             else:
                 return np.NaN
+
+    def features_interrelation_values(self, features):
+        for feature, other_feature in self.features2cooccurrences(features):
+            yield self.interrelation_value(feature, other_feature)
+
+    def feature_list(self):
+        raise NotImplementedError
+
+    def feature_self_relations(self):
+        raise NotImplementedError
+
+    def feature_interrelations(self, *args, omit_self_relations=False):
+        raise NotImplementedError
+
+    def mean_interrelation_value(self):
+        if self.imputation:
+            # TODO: finish imputed variant
+            raise NotImplementedError
+        else:
+            return float(sum(self.df['value'])) / self.num_interrelations()
+
+    def num_interrelations(self):
+        distinct_features = len(set([feature for feature, feature2 in self.df.index.values]))
+        if self.imputation:  # all theoretically possible interrelation for the current feature set
+            return (distinct_features * distinct_features - distinct_features) / 2
+        else:  # actual observed interrelations, sans self-interrelations
+            return len(self.df.index) - distinct_features
+
+    def standard_interrelation_deviation(self, imputation=False):
+        explicit_values = self.df['value']
+        if imputation:  # also include imputation values for whichever interrelations are not present
+            raise NotImplementedError
+        else:  # use present values only
+            return np.std(explicit_values)
+
+    def _get_imputation_value(self, feature1, feature2):
+        raise NotImplementedError  # to be overridden by a specific profile class
+
+    def __getitem__(self, feature_list):
+        return self.features_interrelation_values(feature_list)
 
 
 class CooccurrenceProfile(InterrelationProfile):
@@ -66,13 +121,8 @@ class CooccurrenceProfile(InterrelationProfile):
         return (cls.from_dict(positive_counter, vector_count=positive_vectors),
                 cls.from_dict(negative_counter, vector_count=negative_vectors))
 
-    @staticmethod
-    def features2cooccurrences(features):
-        features = list(set(features))  # get rid of duplicates
-        features.sort()
-        for i, feature in enumerate(features):
-            for other_feature in features[i:]:
-                yield str(feature), str(other_feature)
+    def _get_imputation_value(self, feature1, feature2):
+        return 0  # the co-occurrences not listed in the values have never happened in the set
 
     def __add__(self, other):
         self.df = self.df.add(other.df, fill_value=0)
@@ -108,6 +158,11 @@ class PointwiseMutualInformationProfile(InterrelationProfile):
             axis=1)  # the if/else clause because P(A AND A) = P(A), not P(A)*P(A). And log2(P(A)/P(A)) = log2(1) = 0
         return cls(df, *args, **kwargs)
 
+    def _get_imputation_value(self, feature1, feature2):
+        # TODO: Implement imputation based on "most-optimistic" scenario
+        # that the co-occurrence would happen in the n+1 sample
+        raise NotImplementedError
+
 
 class PointwiseKLDivergenceProfile(InterrelationProfile):
     @classmethod
@@ -115,8 +170,7 @@ class PointwiseKLDivergenceProfile(InterrelationProfile):
                                                *args, vector_count=None, **kwargs):
         kwargs['vector_count'] = vector_count
         df = cooccurrence_probability_profile.df.apply(
-            lambda x: numpy.log2(x / reference_probability_profile.get_feature_relation(x.name[0], x.name[1],
-                                                                                        imputation=False)),
+            lambda x: numpy.log2(x / reference_probability_profile.interrelation_value(x.name[0], x.name[1])),
             axis=1)
         df.dropna(inplace=True)
         return cls(df, *args, **kwargs)
