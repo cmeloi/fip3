@@ -69,6 +69,13 @@ class TestCooccurrenceProfile(unittest.TestCase):
         reference_combined_profile.df.sort_index(inplace=True)
         self.assertTrue(combined_profile.df.equals(reference_combined_profile.df))
 
+    def test_distinct_features(self):
+        p = CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES)
+        features = set()
+        for feature_tuple in FEATURE_TUPLES:
+            features.update(feature_tuple)
+        self.assertSetEqual(p.distinct_features(), features)
+
 
 class TestCooccurrenceProbabilityProfile(unittest.TestCase):
     def test_cooccurrence_probability_calculation(self):

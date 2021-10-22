@@ -52,28 +52,29 @@ class InterrelationProfile:
         for feature, other_feature in self.features2cooccurrences(features):
             yield self.interrelation_value(feature, other_feature)
 
-    def feature_list(self):
-        raise NotImplementedError
+    def distinct_features(self):
+        return set(self.df.index.unique(level='feature1'))
 
     def feature_self_relations(self):
-        raise NotImplementedError
+        return {feature: self.interrelation_value(feature, feature) for feature in self.distinct_features()}
 
     def feature_interrelations(self, *args, omit_self_relations=False):
         raise NotImplementedError
 
     def mean_interrelation_value(self):
+        interrelation_sum = float(sum(self.df['value']))
         if self.imputation:
             # TODO: finish imputed variant
             raise NotImplementedError
-        else:
-            return float(sum(self.df['value'])) / self.num_interrelations()
+            interrelation_sum += self._get_imputation_value(f1, f2)  # TODO: multiply by implicit interrelation count
+        return interrelation_sum / self.num_interrelations()
 
     def num_interrelations(self):
-        distinct_features = len(set([feature for feature, feature2 in self.df.index.values]))
+        num_distinct_features = len(self.distinct_features())
         if self.imputation:  # all theoretically possible interrelation for the current feature set
-            return (distinct_features * distinct_features - distinct_features) / 2
+            return (num_distinct_features * num_distinct_features - num_distinct_features) / 2
         else:  # actual observed interrelations, sans self-interrelations
-            return len(self.df.index) - distinct_features
+            return len(self.df.index) - num_distinct_features
 
     def standard_interrelation_deviation(self, imputation=False):
         explicit_values = self.df['value']
@@ -150,8 +151,7 @@ class PointwiseMutualInformationProfile(InterrelationProfile):
     def from_cooccurrence_probability_profile(cls, cooccurrence_probability_profile,
                                               *args, vector_count=None, **kwargs):
         kwargs['vector_count'] = vector_count
-        standalone_probabilities = {feature: cooccurrence_probability_profile.df.loc[feature, feature]['value']
-                                    for feature, feature2 in cooccurrence_probability_profile.df.index.values}
+        standalone_probabilities = cooccurrence_probability_profile.feature_self_relations()
         df = cooccurrence_probability_profile.df.apply(
             lambda x: numpy.log2(x / (standalone_probabilities[x.name[0]] * standalone_probabilities[x.name[1]]))
             if x.name[0] != x.name[1] else x * 0,
