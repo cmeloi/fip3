@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from rdkit.Chem import AllChem as Chem
+from rdkit.Chem.BRICS import BRICSDecompose
 
 
 def smiles2rdmol(smiles):
@@ -38,12 +39,8 @@ def rdmol2fragment_smiles(mol, fragment_locations, min_radius=0):
                 bond = mol.GetBondWithIdx(bond_id)
                 atoms.add(bond.GetBeginAtomIdx())
                 atoms.add(bond.GetEndAtomIdx())
-            fragment_smiles.add(Chem.MolFragmentToSmiles(mol,
-                                                         atomsToUse=list(atoms),
-                                                         bondsToUse=bonds,
-                                                         canonical=True))
-            #substructure = Chem.PathToSubmol(mol, Chem.FindAtomEnvironmentOfRadiusN(mol, radius, atom))
-            #ecfp_fragment_smiles.add(Chem.MolToSmiles(substructure, canonical=True))
+            fragment_smiles.add(Chem.MolFragmentToSmiles(mol, atomsToUse=list(atoms),
+                                                         bondsToUse=bonds, canonical=True))
     return fragment_smiles
 
 
@@ -54,3 +51,7 @@ def rdmol2morgan_feature_smiles(mol, radius=3, min_radius=1):
     for fragment_id, fragment_locations in bit_info.items():
         features.update(rdmol2fragment_smiles(mol, fragment_locations, min_radius=min_radius))
     return features
+
+
+def rdmol2brics_blocs_smiles(mol, min_fragment_size=1):
+    return BRICSDecompose(mol, minFragmentSize=min_fragment_size)
