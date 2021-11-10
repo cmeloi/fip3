@@ -24,21 +24,33 @@ def sdf2rdmols(sdf_path):
             yield rdmol
 
 
-def rdmol2fragment_smiles(mol, fragment_locations):
-    ecfp_fragment_smiles = set()
+def rdmol2fragment_smiles(mol, fragment_locations, min_radius=0):
+    fragment_smiles = set()
     for atom, radius in fragment_locations:
+        if radius < min_radius:
+            continue
         if radius == 0:
-            ecfp_fragment_smiles.add(mol.GetAtomWithIdx(atom).GetSymbol())
+            fragment_smiles.add(mol.GetAtomWithIdx(atom).GetSymbol())
         else:
-            substructure = Chem.PathToSubmol(mol, Chem.FindAtomEnvironmentOfRadiusN(mol, radius, atom))
-            ecfp_fragment_smiles.add(Chem.MolToSmiles(substructure, canonical=True))
-    return ecfp_fragment_smiles
+            atoms = set()
+            bonds = Chem.FindAtomEnvironmentOfRadiusN(mol, radius, atom)
+            for bond_id in bonds:
+                bond = mol.GetBondWithIdx(bond_id)
+                atoms.add(bond.GetBeginAtomIdx())
+                atoms.add(bond.GetEndAtomIdx())
+            fragment_smiles.add(Chem.MolFragmentToSmiles(mol,
+                                                         atomsToUse=list(atoms),
+                                                         bondsToUse=bonds,
+                                                         canonical=True))
+            #substructure = Chem.PathToSubmol(mol, Chem.FindAtomEnvironmentOfRadiusN(mol, radius, atom))
+            #ecfp_fragment_smiles.add(Chem.MolToSmiles(substructure, canonical=True))
+    return fragment_smiles
 
 
-def rdmol2ecfp_features(mol, radius=3):
+def rdmol2morgan_feature_smiles(mol, radius=3, min_radius=1):
     bit_info = {}
     features = set()
     Chem.GetMorganFingerprint(mol, radius, bitInfo=bit_info)
     for fragment_id, fragment_locations in bit_info.items():
-        features.update(rdmol2fragment_smiles(mol, fragment_locations))
+        features.update(rdmol2fragment_smiles(mol, fragment_locations, min_radius=min_radius))
     return features
