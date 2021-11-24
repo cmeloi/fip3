@@ -54,4 +54,4 @@ def rdmol2morgan_feature_smiles(mol, radius=3, min_radius=1):
 
 
 def rdmol2brics_blocs_smiles(mol, min_fragment_size=1):
-    return BRICSDecompose(mol, minFragmentSize=min_fragment_size)
+    return BRICSDecompose(mol, minFragmentSize=min_fragment_size, returnMols=False)

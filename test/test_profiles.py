@@ -121,6 +121,7 @@ class TestPointwiseKLDivergenceProfile(unittest.TestCase):
             CooccurrenceProbabilityProfile.from_cooccurrence_profile(
                 CooccurrenceProfile.from_feature_lists([('a', 'b')])))
         self.assertEqual(p.interrelation_value('a', 'b'), np.log2(2.0 / 3))
+        print(p.df)
 
 
 if __name__ == '__main__':
