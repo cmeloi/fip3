@@ -119,11 +119,6 @@ class TestPointwiseKLDivergenceProfile(unittest.TestCase):
         p = PointwiseKLDivergenceProfile.from_cooccurrence_probability_profiles(
             cpp1,
             CooccurrenceProbabilityProfile.from_cooccurrence_profile(
-                CooccurrenceProfile.from_feature_lists([])))
-        self.assertTrue(p.df.empty, "Features missing in the reference profile should not be considered.")
-        p = PointwiseKLDivergenceProfile.from_cooccurrence_probability_profiles(
-            cpp1,
-            CooccurrenceProbabilityProfile.from_cooccurrence_profile(
                 CooccurrenceProfile.from_feature_lists([('a', 'b')])))
         self.assertEqual(p.interrelation_value('a', 'b'), np.log2(2.0 / 3))
 
