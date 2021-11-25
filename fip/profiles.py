@@ -14,6 +14,13 @@ class InterrelationProfile:
 
     @classmethod
     def from_dict(cls, value_dict, *args, **kwargs):
+        """Loads an interrelation profile from a dictionary of {(feature1, feature2): value}
+
+        :param value_dict: the dictionary to load
+        :param args: any further arguments to be passed to the InterrelationProfile init
+        :param kwargs: any further keyword arguments to be passed to the InterrelationProfile init
+        :return: the corresponding InterrelationProfile instance
+        """
         df = pandas.DataFrame(((features[0], features[1], value)
                                for features, value in value_dict.items()),
                               columns=['feature1', 'feature2', 'value'])
