@@ -54,4 +54,11 @@ def rdmol2morgan_feature_smiles(mol, radius=3, min_radius=1):
 
 
 def rdmol2brics_blocs_smiles(mol, min_fragment_size=1):
+    """Decomposes the provided rdmol instance into BRICS fragment SMILES, as designed by Degen et al. in
+    On the Art of Compiling and Using 'Drug-Like' Chemical Fragment Spaces, https://doi.org/10.1002/cmdc.200800178
+
+    :param mol: the source RDKit Mol instance
+    :param min_fragment_size: passed to the minFragmentSize of the RDKit implementation
+    :return: SMILES of the BRICS fragments
+    """
     return BRICSDecompose(mol, minFragmentSize=min_fragment_size, returnMols=False)

@@ -29,6 +29,12 @@ class InterrelationProfile:
 
     @staticmethod
     def features2cooccurrences(features, *, omit_self_relations=False):
+        """Processes an iterable of features into a set of feature co-occurrences.
+
+        :param features: an iterable of features to process, e.g. (feature1, feature2, feature4, ...)
+        :param omit_self_relations: whether to omit the co-occurrences of features with themselves
+        :return: a co-occurrence generator
+        """
         features = list(set(features))  # get rid of duplicates
         features.sort()
         for i, feature in enumerate(features):
