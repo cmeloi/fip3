@@ -50,30 +50,37 @@ def sdf2rdmols(sdf_path):
             yield rdmol
 
 
-def rdmol2fragment_smiles(mol, fragment_locations, min_radius=0):
+def rdmol2fragment_smiles(mol, fragment_locations, min_radius=0, *args, all_bonds_explicit=False, canonical_smiles=True,
+                          isomeric_smiles=False, all_H_explicit=True):
     """Generates a set of fragments in SMILES notation from a molecule given as an RDKit Mol instance,
     based on provided atom indices and radii.
 
     :param mol: the molecule for fragmenting, as RDKit Mol
     :param fragment_locations: an iterable of fragment locations, in (atom, radius) tuples
     :param min_radius: minimal feature radius to consider, default 0. Can be set to ignore lower-scope features.
+    :param all_bonds_explicit: boolean indicating whether all bond orders will be explicitly stated in the output. Default False.
+    :param canonical_smiles: boolean indicating whether the fragment should be attempted to make canonical. Default True.
+    :param isomeric_smiles: boolean indicating whether to include stereo information in the fragments. Default False.
+    :param all_H_explicit: boolean indicating whether to explicitly include all hydrogen atoms. Default True.
     :return: a set of SMILES strings
     """
     fragment_smiles = set()
     for atom, radius in fragment_locations:
         if radius < min_radius:
             continue
+        atoms = set()
+        bonds = set()
         if radius == 0:
-            fragment_smiles.add(mol.GetAtomWithIdx(atom).GetSymbol())
+            atoms.add(atom)
         else:
-            atoms = set()
             bonds = Chem.FindAtomEnvironmentOfRadiusN(mol, radius, atom)
             for bond_id in bonds:
                 bond = mol.GetBondWithIdx(bond_id)
                 atoms.add(bond.GetBeginAtomIdx())
                 atoms.add(bond.GetEndAtomIdx())
-            fragment_smiles.add(Chem.MolFragmentToSmiles(mol, atomsToUse=list(atoms),
-                                                         bondsToUse=bonds, canonical=True))
+        fragment_smiles.add(Chem.MolFragmentToSmiles(mol, atomsToUse=list(atoms), bondsToUse=bonds,
+                                                     allBondsExplicit=all_bonds_explicit, canonical=canonical_smiles,
+                                                     isomericSmiles=isomeric_smiles, allHsExplicit=all_H_explicit))
     return fragment_smiles
 
 
