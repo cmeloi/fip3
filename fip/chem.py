@@ -50,8 +50,20 @@ def sdf2rdmols(sdf_path):
             yield rdmol
 
 
-def rdmol2fragment_smiles(mol, fragment_locations, min_radius=0, *args, all_bonds_explicit=False, canonical_smiles=True,
-                          isomeric_smiles=False, all_H_explicit=True):
+def rdmol_bonds2fragment_smiles(mol, bonds, *, all_bonds_explicit=False, canonical_smiles=True,
+                                isomeric_smiles=False, all_H_explicit=True):
+    atoms = set()
+    for bond_id in bonds:
+        bond = mol.GetBondWithIdx(bond_id)
+        atoms.add(bond.GetBeginAtomIdx())
+        atoms.add(bond.GetEndAtomIdx())
+    return Chem.MolFragmentToSmiles(mol, atomsToUse=list(atoms), bondsToUse=bonds,
+                             allBondsExplicit=all_bonds_explicit, canonical=canonical_smiles,
+                             isomericSmiles=isomeric_smiles, allHsExplicit=all_H_explicit)
+
+
+def rdmol_locations2fragments_smiles(mol, fragment_locations, min_radius=0, *, all_bonds_explicit=False,
+                                     canonical_smiles=True, isomeric_smiles=False, all_H_explicit=True):
     """Generates a set of fragments in SMILES notation from a molecule given as an RDKit Mol instance,
     based on provided atom indices and radii.
 
@@ -68,19 +80,16 @@ def rdmol2fragment_smiles(mol, fragment_locations, min_radius=0, *args, all_bond
     for atom, radius in fragment_locations:
         if radius < min_radius:
             continue
-        atoms = set()
-        bonds = set()
         if radius == 0:
-            atoms.add(atom)
+            fragment_smiles.add(Chem.MolFragmentToSmiles(mol, atomsToUse=[atom], allBondsExplicit=all_bonds_explicit,
+                                                         canonical=canonical_smiles,
+                                                         isomericSmiles=isomeric_smiles, allHsExplicit=all_H_explicit))
         else:
             bonds = Chem.FindAtomEnvironmentOfRadiusN(mol, radius, atom)
-            for bond_id in bonds:
-                bond = mol.GetBondWithIdx(bond_id)
-                atoms.add(bond.GetBeginAtomIdx())
-                atoms.add(bond.GetEndAtomIdx())
-        fragment_smiles.add(Chem.MolFragmentToSmiles(mol, atomsToUse=list(atoms), bondsToUse=bonds,
-                                                     allBondsExplicit=all_bonds_explicit, canonical=canonical_smiles,
-                                                     isomericSmiles=isomeric_smiles, allHsExplicit=all_H_explicit))
+            fragment_smiles.add(rdmol_bonds2fragment_smiles(mol, bonds, all_bonds_explicit=all_bonds_explicit,
+                                                            canonical_smiles=canonical_smiles,
+                                                            isomeric_smiles=isomeric_smiles,
+                                                            all_H_explicit=all_H_explicit))
     return fragment_smiles
 
 
@@ -96,7 +105,7 @@ def rdmol2morgan_feature_smiles(mol, radius=3, min_radius=1):
     features = set()
     Chem.GetMorganFingerprint(mol, radius, bitInfo=bit_info)
     for fragment_id, fragment_locations in bit_info.items():
-        features.update(rdmol2fragment_smiles(mol, fragment_locations, min_radius=min_radius))
+        features.update(rdmol_locations2fragments_smiles(mol, fragment_locations, min_radius=min_radius))
     return features
 
 
