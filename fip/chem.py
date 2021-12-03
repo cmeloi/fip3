@@ -52,6 +52,17 @@ def sdf2rdmols(sdf_path):
 
 def rdmol_bonds2fragment_smiles(mol, bonds, *, all_bonds_explicit=False, canonical_smiles=True,
                                 isomeric_smiles=False, all_H_explicit=True):
+    """Generates a fragment in SMILES notation from a molecule given as an RDKit Mol instance,
+    based on the provided bond IDs within the molecule.
+
+    :param mol: the molecule containing the fragment, as RDKit Mol
+    :param bonds: a set of bonds that are part of the fragment
+    :param all_bonds_explicit: boolean indicating whether all bond orders will be explicitly stated in the output. Default False.
+    :param canonical_smiles: boolean indicating whether the fragment should be attempted to make canonical. Default True.
+    :param isomeric_smiles: boolean indicating whether to include stereo information in the fragments. Default False.
+    :param all_H_explicit: boolean indicating whether to explicitly include all hydrogen atoms. Default True.
+    :return: a SMILES string of the fragment
+    """
     atoms = set()
     for bond_id in bonds:
         bond = mol.GetBondWithIdx(bond_id)
