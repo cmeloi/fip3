@@ -103,7 +103,7 @@ def rdmol_locations2fragments_smiles(mol, fragment_locations, min_radius=0, *, a
                                                             canonical_smiles=canonical_smiles,
                                                             isomeric_smiles=isomeric_smiles,
                                                             all_H_explicit=all_H_explicit))
-    fragment_smiles.remove(None)  # in case there were some invalid fragments
+    fragment_smiles.discard(None)  # in case there were some invalid fragments
     return fragment_smiles
 
 
