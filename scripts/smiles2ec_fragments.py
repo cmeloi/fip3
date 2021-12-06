@@ -12,10 +12,12 @@ def make_fragments(args):
             if line:
                 mol = smiles2rdmol(line)
                 if not mol:
-                    out.write(f"Can't parse {line} as RDKit Mol")
+                    out.write(f"Can't parse {line} as RDKit Mol\n")
                     continue
-                fragment_strings = rdmol2morgan_feature_smiles(mol, radius=args.max_radius, min_radius=args.min_radius)
+                fragment_strings = rdmol2morgan_feature_smiles(mol, radius=args.max_radius, min_radius=args.min_radius,
+                                                               all_H_explicit=args.explicit_hydrogen)
                 out.write(args.fragment_delimiter.join(fragment_strings))
+                out.write("\n")
 
 
 def main():
@@ -30,6 +32,8 @@ def main():
                         help="The min radius of the generated fragments. Default 0.")
     parser.add_argument('-d', '--fragment_delimiter', nargs='?', type=str, default=' ',
                         help="Delimiter between the generated fragment strings. Default single space.")
+    parser.add_argument('-e', '--explicit_hydrogen', nargs='?', type=bool, default=False,
+                        help="Whether to include explicit hydrogen in the EC fragments.")
     args = parser.parse_args()
     make_fragments(args)
 

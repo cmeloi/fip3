@@ -60,7 +60,7 @@ def rdmol_bonds2fragment_smiles(mol, bonds, *, all_bonds_explicit=False, canonic
     :param all_bonds_explicit: boolean indicating whether all bond orders will be explicitly stated in the output. Default False.
     :param canonical_smiles: boolean indicating whether the fragment should be attempted to make canonical. Default True.
     :param isomeric_smiles: boolean indicating whether to include stereo information in the fragments. Default False.
-    :param all_H_explicit: boolean indicating whether to explicitly include all hydrogen atoms. Default True.
+    :param all_H_explicit: boolean indicating whether to explicitly include all hydrogen atoms. Default False.
     :return: a SMILES string of the fragment
     """
     atoms = set()
@@ -104,19 +104,28 @@ def rdmol_locations2fragments_smiles(mol, fragment_locations, min_radius=0, *, a
     return fragment_smiles
 
 
-def rdmol2morgan_feature_smiles(mol, radius=3, min_radius=1):
+def rdmol2morgan_feature_smiles(mol, radius=3, min_radius=1, *, all_bonds_explicit=False,
+                                     canonical_smiles=True, isomeric_smiles=False, all_H_explicit=True):
     """Breaks a molecule, given as an RDKit Mol instance, into a set of ECFP-like fragments with selected radius, and returns them in SMILES notation.
 
     :param mol: the molecule for fragmenting, as RDKit Mol
     :param radius: EC fragment radius
     :param min_radius: minimal fragment radius to consider, default 0. Can be set to ignore lower-scope fragments.
+    :param all_bonds_explicit: boolean indicating whether all bond orders will be explicitly stated in the output. Default False.
+    :param canonical_smiles: boolean indicating whether the fragment should be attempted to make canonical. Default True.
+    :param isomeric_smiles: boolean indicating whether to include stereo information in the fragments. Default False.
+    :param all_H_explicit: boolean indicating whether to explicitly include all hydrogen atoms. Default True.
     :return: a set of SMILES strings
     """
     bit_info = {}
     features = set()
     Chem.GetMorganFingerprint(mol, radius, bitInfo=bit_info)
     for fragment_id, fragment_locations in bit_info.items():
-        features.update(rdmol_locations2fragments_smiles(mol, fragment_locations, min_radius=min_radius))
+        features.update(rdmol_locations2fragments_smiles(mol, fragment_locations, min_radius=min_radius,
+                                                         all_bonds_explicit=all_bonds_explicit,
+                                                         canonical_smiles=canonical_smiles,
+                                                         isomeric_smiles=isomeric_smiles,
+                                                         all_H_explicit=all_H_explicit))
     return features
 
 
