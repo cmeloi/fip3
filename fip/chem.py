@@ -61,13 +61,15 @@ def rdmol_bonds2fragment_smiles(mol, bonds, *, all_bonds_explicit=False, canonic
     :param canonical_smiles: boolean indicating whether the fragment should be attempted to make canonical. Default True.
     :param isomeric_smiles: boolean indicating whether to include stereo information in the fragments. Default False.
     :param all_H_explicit: boolean indicating whether to explicitly include all hydrogen atoms. Default False.
-    :return: a SMILES string of the fragment
+    :return: a SMILES string of the fragment, None if there are no atoms matched
     """
     atoms = set()
     for bond_id in bonds:
         bond = mol.GetBondWithIdx(bond_id)
         atoms.add(bond.GetBeginAtomIdx())
         atoms.add(bond.GetEndAtomIdx())
+    if not atoms:
+        return None
     return Chem.MolFragmentToSmiles(mol, atomsToUse=list(atoms), bondsToUse=bonds,
                              allBondsExplicit=all_bonds_explicit, canonical=canonical_smiles,
                              isomericSmiles=isomeric_smiles, allHsExplicit=all_H_explicit)
@@ -101,6 +103,7 @@ def rdmol_locations2fragments_smiles(mol, fragment_locations, min_radius=0, *, a
                                                             canonical_smiles=canonical_smiles,
                                                             isomeric_smiles=isomeric_smiles,
                                                             all_H_explicit=all_H_explicit))
+    fragment_smiles.remove(None)  # in case there were some invalid fragments
     return fragment_smiles
 
 
