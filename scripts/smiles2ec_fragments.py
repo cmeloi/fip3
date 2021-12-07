@@ -2,7 +2,7 @@
 import argparse
 import sys
 
-from fip.chem import smiles2rdmol, rdmol2morgan_feature_smiles
+from fip.chem import smiles2rdmol, rdmol2morgan_feature_smiles, standardize_mol
 
 
 def make_fragments(args):
@@ -14,6 +14,8 @@ def make_fragments(args):
                 if not mol:
                     out.write(f"Can't parse {line} as RDKit Mol\n")
                     continue
+                mol = standardize_mol(mol, remove_hydrogens=(not args.explicit_hydrogen),
+                                      remove_stereo=(not args.stereo))
                 fragment_strings = rdmol2morgan_feature_smiles(mol, radius=args.max_radius, min_radius=args.min_radius,
                                                                all_H_explicit=args.explicit_hydrogen)
                 out.write(args.fragment_delimiter.join(fragment_strings))
@@ -34,6 +36,8 @@ def main():
                         help="Delimiter between the generated fragment strings. Default single space.")
     parser.add_argument('-e', '--explicit_hydrogen', nargs='?', type=bool, default=False,
                         help="Whether to include explicit hydrogen in the EC fragments.")
+    parser.add_argument('-s', '--stereo', nargs='?', type=bool, default=False,
+                        help="Whether to use stereochemistry information for the fragments.")
     args = parser.parse_args()
     make_fragments(args)
 

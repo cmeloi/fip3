@@ -2,6 +2,7 @@
 
 from rdkit.Chem import AllChem as Chem
 from rdkit.Chem.BRICS import BRICSDecompose
+from rdkit.Chem.rdmolops import RemoveStereochemistry, RemoveAllHs
 
 
 def smiles2rdmol(smiles):
@@ -22,6 +23,21 @@ def smarts2rdmol(smarts):
     :return: RDKit Mol instance
     """
     return Chem.MolFromSmarts(smarts)
+
+
+def standardize_mol(mol, *, remove_hydrogens=True, remove_stereo=True):
+    """Simple structure standardization.
+
+    :param mol: RDKit Mol instance to standardize
+    :param remove_hydrogens: whether to remove all hydrogens using RDKit RemoveAllHs
+    :param remove_stereo: whether to remove stereo information using RDKIt RemoveStereochemistry
+    :return: standardized RDKit Mol instance
+    """
+    if remove_stereo:
+        RemoveStereochemistry(mol)
+    if remove_hydrogens:
+        mol = RemoveAllHs(mol, sanitize=True)
+    return mol
 
 
 def rdmol_has_substructure_pattern(rdmol, pattern):
