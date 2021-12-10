@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
 import argparse
 import sys
+import signal
 
-from fip.chem import smiles2rdmol, rdmol2brics_blocs_smiles, standardize_mol
+from fip.chem import smiles2rdmol, rdmol2brics_blocs_smiles, standardize_mol, rdmol2smiles
+
+
+def timeout_handler(signum, frame):
+    raise TimeoutError(str(signum) + str(frame))
 
 
 def make_fragments(args):
+    signal.signal(signal.SIGALRM, timeout_handler)
     with args.output as out, args.input as inputfile:
         for line in inputfile:
             line = line.strip()
@@ -16,7 +22,11 @@ def make_fragments(args):
                     continue
                 mol = standardize_mol(mol, remove_hydrogens=(not args.explicit_hydrogen),
                                       remove_stereo=(not args.stereo))
-                fragment_strings = rdmol2brics_blocs_smiles(mol, min_fragment_size=args.min_fragment_size)
+                signal.alarm(args.timeout)
+                try:
+                    fragment_strings = rdmol2brics_blocs_smiles(mol, min_fragment_size=args.min_fragment_size)
+                except TimeoutError:
+                    fragment_strings = [rdmol2smiles(mol)]
                 out.write(args.fragment_delimiter.join(fragment_strings))
                 out.write("\n")
 
@@ -35,6 +45,8 @@ def main():
                         help="Whether to include explicit hydrogen in the EC fragments.")
     parser.add_argument('-s', '--stereo', nargs='?', type=bool, default=False,
                         help="Whether to use stereochemistry information for the fragments.")
+    parser.add_argument('-t', '--timeout', nargs='?', type=int, default=10,
+                        help="How many seconds to wait on a single compound, before it is given upon and skipped. Default 10 s.")
     args = parser.parse_args()
     make_fragments(args)
 

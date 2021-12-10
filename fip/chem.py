@@ -15,6 +15,16 @@ def smiles2rdmol(smiles):
     return Chem.MolFromSmiles(smiles)
 
 
+def rdmol2smiles(mol):
+    """Simple conversion of RDKit Mol instance into a SMILES string.
+    Wrapped in case some standardization/postprocessing needed.
+
+    :param mol: RDKit Mol instance
+    :return: SMILES string
+    """
+    return Chem.MolToSmiles(mol)
+
+
 def smarts2rdmol(smarts):
     """Simple conversion of SMARTS string into a RDKit Mol instance.
     Wrapped in case some standardization/postprocessing needed.
