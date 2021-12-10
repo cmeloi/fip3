@@ -25,7 +25,7 @@ def make_fragments(args):
                 signal.alarm(args.timeout)
                 try:
                     fragment_strings = rdmol2brics_blocs_smiles(mol, min_fragment_size=args.min_fragment_size)
-                except TimeoutError:
+                except (TimeoutError, AttributeError):
                     fragment_strings = [rdmol2smiles(mol)]
                 out.write(args.fragment_delimiter.join(fragment_strings))
                 out.write("\n")
