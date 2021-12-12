@@ -94,6 +94,14 @@ class InterrelationProfile:
         explicit_values = self.df['value']
         return np.std(explicit_values)
 
+    def to_csv(self, target_file):
+        """Export the interrelation matrix to a CSV file
+
+        :param target_file: the path to the export
+        :return: None
+        """
+        return self.df.to_csv(target_file)
+
     def _get_imputation_value(self, f1, f2):
         raise NotImplementedError  # to be overridden by child classes
 
