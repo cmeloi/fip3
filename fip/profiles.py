@@ -112,6 +112,13 @@ class InterrelationProfile:
 class CooccurrenceProfile(InterrelationProfile):
     @classmethod
     def from_feature_lists(cls, feature_lists, *args, **kwargs):
+        """Generate a Co-occurrence profile from an iterable of feature lists.
+
+        :param feature_lists: the iterable of feature lists to derive the CooccurrenceProfile from
+        :param args: any further arguments to be passed to the CooccurrenceProfile init
+        :param kwargs: any further keyword arguments to be passed to the CooccurrenceProfile init
+        :return: the corresponding CooccurrenceProfile instance
+        """
         cooccurrence_counter = Counter()
         processed_lists = 0
         for feature_list in feature_lists:
