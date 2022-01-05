@@ -1,11 +1,16 @@
 from collections import Counter
+from abc import ABCMeta, abstractmethod
 
 import numpy as np
 import pandas
 import numpy
 
 
-class InterrelationProfile:
+class InterrelationProfile(object):
+    """A generic parent class representing an interrelation profile, and implementing their common functionality.
+    Not meant for instantiation."""
+    __metaclass__ = ABCMeta
+
     def __init__(self, df, *, zscore=False, **kwargs):
         self.df = df
         self.attrs = kwargs
@@ -46,9 +51,20 @@ class InterrelationProfile:
                     yield str(feature), str(other_feature)
 
     def convert_to_zscore(self):
+        """Converts the values within the InterrelationProfile into Z-scores, i.e. subtracts mean,
+        divides by standard deviation.
+
+        :return: None, the InterrelationProfile is changed itself
+        """
         self.df = (self.df - self.mean_interrelation_value()) / self.standard_interrelation_deviation()
 
     def interrelation_value(self, f1, f2):
+        """Returns the interrelation value for the feature pair provided in the arguments.
+
+        :param f1: the first feature
+        :param f2: the second feature
+        :return: The interrelation value between the two features within the profile. Usually int or float.
+        """
         try:
             if f1 <= f2:
                 return self.df.loc[f1, f2]['value']
@@ -58,41 +74,80 @@ class InterrelationProfile:
             return self._get_imputation_value(f1, f2)
 
     def features_interrelation_values(self, features):
+        """Provides interrelation values within the profile for all features within a given feature list.
+
+        :param features: features to look up within the profile
+        :return: a generator yielding the interrelation values, usually floats or ints
+        """
         # TODO: consider using df.index.intersection for this instead of loop
         for feature, other_feature in self.features2cooccurrences(features):
             yield self.interrelation_value(feature, other_feature)
 
     def distinct_features(self):
+        """Provides a set of all distinct features present within the interrelation profile.
+
+        :return: feature names as a set of strings
+        """
         return set(self.df.index.unique(level='feature1'))
 
     def feature_self_relations(self):
+        """Returns self-relation values of all features in the profile as a dictionary.
+
+        :return: a dictionary of {feature: self_interrelation_value} pairs
+        """
         return {feature: self.interrelation_value(feature, feature) for feature in self.distinct_features()}
 
     def feature_interrelations(self, *args, omit_self_relations=False):
         raise NotImplementedError
 
+    @abstractmethod
     def mean_interrelation_value(self):
+        """Provides mean value of all interrelation values within the profile, including imputed values.
+        Implemented individually within different FeatureInterrelation types, due to imputation differences.
+        """
         #  interrelation_sum += self._get_imputation_value(f1, f2)  # TODO: multiply by implicit interrelation count
         #  return interrelation_sum / self.num_interrelations()
         raise NotImplementedError
 
     def mean_raw_interrelation_value(self):
+        """Provides mean value of all explicit interrelation values within the profile, i.e. not counting in
+        the imputation values.
+
+        :return: the mean explicit interrelation value as a float
+        """
         return float(sum(self.df['value']))
 
     def num_interrelations(self):
-        # all theoretically possible interrelation for the current feature set
+        """Provides the count of all possible feature interrelations that can exist within the profile,
+        based solely on the amount of observed features.
+
+        :return: count of all possible interrelations
+        """
         num_distinct_features = len(self.distinct_features())
         return (num_distinct_features * num_distinct_features - num_distinct_features) / 2
 
     def num_raw_interrelations(self):
+        """Provides the count of all interrelations that explicitly occur within the profile, i.e. all interrelations
+        that are non-imputed, non-self-relations.
+
+        :return: count of all explicit interrelation values
+        """
         return len(self.df.index) - len(self.distinct_features())
 
+    @abstractmethod
     def standard_interrelation_deviation(self):
+        """Provides standard deviation for all interrelation values within the profile, including imputed values.
+        Implemented individually within different FeatureInterrelation types, due to imputation differences.
+        """
         raise NotImplementedError
 
     def standard_raw_interrelation_deviation(self):
+        """Provides standard deviation from all explicit (i.e. non-imputed) interrelation values within the profile.
+
+        :return: The standard deviation as a float
+        """
         explicit_values = self.df['value']
-        return np.std(explicit_values)
+        return float(np.std(explicit_values))
 
     def to_csv(self, target_file):
         """Export the interrelation matrix to a CSV file
@@ -102,14 +157,18 @@ class InterrelationProfile:
         """
         return self.df.to_csv(target_file)
 
+    @abstractmethod
     def _get_imputation_value(self, f1, f2):
-        raise NotImplementedError  # to be overridden by child classes
+        raise NotImplementedError
 
     def __getitem__(self, feature_list):
         return self.features_interrelation_values(feature_list)
 
 
 class CooccurrenceProfile(InterrelationProfile):
+    """A feature Co-occurrence profile, which is usually a core profile for further interrelation analysis.
+    Holds raw counts on how many times did the features occur and co-occur within the characterized set.
+    """
     @classmethod
     def from_feature_lists(cls, feature_lists, *args, **kwargs):
         """Generate a Co-occurrence profile from an iterable of feature lists.
@@ -136,7 +195,12 @@ class CooccurrenceProfile(InterrelationProfile):
     def from_feature_lists_split_on_feature(cls, iterable, feature):
         """Generates and returns two CooccurrenceProbabilityProfile instances from the provided iterable,
         and the provided feature. Returns main profile from feature vectors containing the given feature,
-        and a reference profile from all other feature vectors"""
+        and a reference profile from all other feature vectors.
+
+        :param iterable: the iterable of feature lists to derive the CooccurrenceProfile from
+        :param feature: the feature to split the set on
+        :return: a tuple of the CooccurrenceProfile instances (with_feature, without_feature)
+        """
         positive_counter, positive_vectors = Counter(), 0
         negative_counter, negative_vectors = Counter(), 0
         for feature_list in iterable:
@@ -160,6 +224,8 @@ class CooccurrenceProfile(InterrelationProfile):
 
 
 class CooccurrenceProbabilityProfile(InterrelationProfile):
+    """A co-occurrence probability profile, holding information about the observed probabilities for feature pair
+    co-occurrences within the characterized set."""
     @classmethod
     def from_cooccurrence_profile(cls, cooccurrence_profile, *args, vector_count=None, **kwargs):
         """Creates a Cooccurrence Probability Profile from the provided Cooccurrence Profile.
@@ -197,6 +263,10 @@ class CooccurrenceProbabilityProfile(InterrelationProfile):
 
 
 class PointwiseMutualInformationProfile(InterrelationProfile):
+    """An interrelation profile consisting of Pointwise Mutual Information (PMI) values observed between the features
+    present in the characterized set. PMI is a measure of association between two features - a ratio between the
+    observed co-occurrence probability of the feature pair, versus the projected co-occurrence if the features
+    were completely independent, based on their individual occurrence rate."""
     @classmethod
     def from_cooccurrence_probability_profile(cls, cooccurrence_probability_profile, *args, **kwargs):
         """Generate a PMI interrelation profile.
@@ -232,6 +302,10 @@ class PointwiseMutualInformationProfile(InterrelationProfile):
 
 
 class PointwiseKLDivergenceProfile(InterrelationProfile):
+    """An interrelation profile consisting of pointwise Kullback–Leibler divergence values, a measure of statistical
+    distances for each feature pair, between its observed co-occurrence in the characterized set and its observed
+    co-occurrence in a reference set.
+    """
     @classmethod
     def from_cooccurrence_probability_profiles(cls, cooccurrence_probability_profile, reference_probability_profile, *args, **kwargs):
         """Creates a pointwise KL Divergence interrelation profile quantifying how well do the co-occurrence
@@ -239,7 +313,7 @@ class PointwiseKLDivergenceProfile(InterrelationProfile):
 
         pKLD(F1|F2) = P(F1|F2) / Q(F1|F2)
 
-        , where F1 and F2 are observed features, P(F1|F2) is their co-occurrence probability within the evaluated
+        where F1 and F2 are observed features, P(F1|F2) is their co-occurrence probability within the evaluated
         interrelation profile, and Q(F1|F2) is the same within the reference interrelation profile.
 
         :param cooccurrence_probability_profile: the CooccurrenceProbabilityProfile instance to be evaluated
