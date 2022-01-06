@@ -97,8 +97,16 @@ class InterrelationProfile(object):
         """
         return {feature: self.interrelation_value(feature, feature) for feature in self.distinct_features()}
 
-    def feature_interrelations(self, *args, omit_self_relations=False):
-        raise NotImplementedError
+    def feature_interrelations(self):
+        """Yields all explicit interrelations values between features in the profile, in a tuple.
+        Omits self-relations of features.
+
+        :return: yields tuples of (feature1, feature2, interrelation_value)
+        """
+        for multiindex, value in self.df.iterrows():
+            if multiindex[0] == multiindex[1]:
+                continue
+            yield multiindex[0], multiindex[1], value
 
     @abstractmethod
     def mean_interrelation_value(self):
@@ -115,7 +123,12 @@ class InterrelationProfile(object):
 
         :return: the mean explicit interrelation value as a float
         """
-        return float(sum(self.df['value']))
+        num_raw_interrelations = 0
+        running_sum = 0.0
+        for f1, f2, value in self.feature_interrelations():
+            num_raw_interrelations += 1
+            running_sum += value
+        return running_sum / num_raw_interrelations
 
     def num_interrelations(self):
         """Provides the count of all possible feature interrelations that can exist within the profile,

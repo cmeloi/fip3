@@ -73,8 +73,18 @@ class TestCooccurrenceProfile(unittest.TestCase):
         p = CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES)
         features = set()
         for feature_tuple in FEATURE_TUPLES:
-            features.update(feature_tuple)
+            features.update(set(feature_tuple))
         self.assertSetEqual(p.distinct_features(), features)
+
+    def test_feature_interrelations(self):
+        p = CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES)
+        num_raw_interrelations = p.num_raw_interrelations()
+        measured_interrelations = 0
+        for f1, f2, value in p.feature_interrelations():
+            measured_interrelations += 1
+            self.assertNotEqual(f1, f2)
+            self.assertEqual(int(value), COOCCURRENCE_COUNTS[(f1, f2)])
+        self.assertEqual(num_raw_interrelations, measured_interrelations)
 
 
 class TestCooccurrenceProbabilityProfile(unittest.TestCase):
