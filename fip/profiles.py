@@ -33,22 +33,26 @@ class InterrelationProfile(object):
         return cls(df, *args, **kwargs)
 
     @staticmethod
-    def features2cooccurrences(features, *, omit_self_relations=False):
+    def features2cooccurrences(features):
         """Processes an iterable of features into a set of feature co-occurrences.
 
         :param features: an iterable of features to process, e.g. (feature1, feature2, feature4, ...)
-        :param omit_self_relations: whether to omit the co-occurrences of features with themselves
         :return: a co-occurrence generator
         """
         features = list(set(features))  # get rid of duplicates
         features.sort()
         for i, feature in enumerate(features):
-            if omit_self_relations:
-                for other_feature in features[i+1:]:
-                    yield str(feature), str(other_feature)
-            else:
-                for other_feature in features[i:]:
-                    yield str(feature), str(other_feature)
+            for other_feature in features[i:]:
+                yield str(feature), str(other_feature)
+
+    def select_self_relations(self):
+        return self.df.loc[self.df.index.get_level_values('feature1') == self.df.index.get_level_values('feature2')]
+
+    def select_raw_interrelations(self):
+        return self.df.loc[self.df.index.get_level_values('feature1') != self.df.index.get_level_values('feature2')]
+
+    def select_all(self):
+        return self.df
 
     def convert_to_zscore(self):
         """Converts the values within the InterrelationProfile into Z-scores, i.e. subtracts mean,
@@ -56,20 +60,24 @@ class InterrelationProfile(object):
 
         :return: None, the InterrelationProfile is changed itself
         """
+        # TODO: Make split Z-score for self-relations and interrelations
         self.df = (self.df - self.mean_interrelation_value()) / self.standard_interrelation_deviation()
 
-    def interrelation_value(self, f1, f2):
+    def interrelation_value(self, f1, f2=None):
         """Returns the interrelation value for the feature pair provided in the arguments.
+        If second argument f2 is not filled in, returns self-relation (f1, f1).
 
         :param f1: the first feature
-        :param f2: the second feature
+        :param f2: the second feature, default None
         :return: The interrelation value between the two features within the profile. Usually int or float.
         """
+        if f2 is None:
+            return self.df.at[(f1, f1), 'value']
         try:
             if f1 <= f2:
-                return self.df.loc[f1, f2]['value']
+                return self.df.at[(f1, f2), 'value']
             else:
-                return self.df.loc[f2, f1]['value']
+                return self.df.at[(f2, f1), 'value']
         except KeyError:
             return self._get_imputation_value(f1, f2)
 
@@ -130,7 +138,7 @@ class InterrelationProfile(object):
             running_sum += value
         return running_sum / num_raw_interrelations
 
-    def num_interrelations(self):
+    def num_max_interrelations(self):
         """Provides the count of all possible feature interrelations that can exist within the profile,
         based solely on the amount of observed features.
 
@@ -146,6 +154,14 @@ class InterrelationProfile(object):
         :return: count of all explicit interrelation values
         """
         return len(self.df.index) - len(self.distinct_features())
+
+    def num_features(self):
+        """Provides the count of all features (individual features, not their interrelations)
+        that occur within the profile.
+
+        :return: count of all features
+        """
+        return len(self.distinct_features())
 
     @abstractmethod
     def standard_interrelation_deviation(self):
@@ -174,8 +190,8 @@ class InterrelationProfile(object):
     def _get_imputation_value(self, f1, f2):
         raise NotImplementedError
 
-    def __getitem__(self, feature_list):
-        return self.features_interrelation_values(feature_list)
+    def __getitem__(self, f1, f2=None):
+        return self.interrelation_value(f1, f2)
 
 
 class CooccurrenceProfile(InterrelationProfile):

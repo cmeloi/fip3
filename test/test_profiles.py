@@ -86,6 +86,18 @@ class TestCooccurrenceProfile(unittest.TestCase):
             self.assertEqual(int(value), COOCCURRENCE_COUNTS[(f1, f2)])
         self.assertEqual(num_raw_interrelations, measured_interrelations)
 
+    def test_select_self_relations(self):
+        p = CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES)
+        self_relations = p.select_self_relations()
+        num_self_relations = p.num_features()
+        measured_self_relations = 0
+        for multiindex, value in self_relations.iterrows():
+            f1, f2 = multiindex
+            measured_self_relations += 1
+            self.assertEqual(f1, f2)
+            self.assertEqual(int(value), COOCCURRENCE_COUNTS[(f1, f2)])
+        self.assertEqual(num_self_relations, measured_self_relations)
+
 
 class TestCooccurrenceProbabilityProfile(unittest.TestCase):
     def test_cooccurrence_probability_calculation(self):
