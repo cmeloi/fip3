@@ -1,4 +1,5 @@
 import unittest
+import statistics
 
 from pandas import DataFrame
 
@@ -97,6 +98,20 @@ class TestCooccurrenceProfile(unittest.TestCase):
             self.assertEqual(f1, f2)
             self.assertEqual(int(value), COOCCURRENCE_COUNTS[(f1, f2)])
         self.assertEqual(num_self_relations, measured_self_relations)
+
+    def test_raw_standard_interrelation_deviation(self):
+        p = CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES)
+        interrelation_values = [value for features, value in COOCCURRENCE_COUNTS.items()
+                                if features[0] != features[1]]
+        interrelation_values_std = statistics.stdev(interrelation_values)
+        self.assertEqual(p.raw_standard_interrelation_deviation(), interrelation_values_std)
+
+    def test_standard_self_relation_deviation(self):
+        p = CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES)
+        interrelation_values = [value for features, value in COOCCURRENCE_COUNTS.items()
+                                if features[0] == features[1]]
+        interrelation_values_std = statistics.stdev(interrelation_values)
+        self.assertEqual(p.standard_self_relation_deviation(), interrelation_values_std)
 
 
 class TestCooccurrenceProbabilityProfile(unittest.TestCase):

@@ -184,13 +184,23 @@ class InterrelationProfile(object):
         """
         raise NotImplementedError
 
-    def standard_raw_interrelation_deviation(self):
-        """Provides standard deviation from all explicit (i.e. non-imputed) interrelation values within the profile.
+    def standard_self_relation_deviation(self):
+        """Provides standard deviation from all self-relation values within the profile.
+        Ignores interrelations.
 
         :return: The standard deviation as a float
         """
-        explicit_values = self.df['value']
-        return float(np.std(explicit_values))
+        explicit_values = self.select_self_relations()['value']
+        return float(explicit_values.std())
+
+    def raw_standard_interrelation_deviation(self):
+        """Provides standard deviation from all explicit (i.e. non-imputed) interrelation values within the profile.
+        Ignores self-relations.
+
+        :return: The standard deviation as a float
+        """
+        explicit_values = self.select_raw_interrelations()['value']
+        return float(explicit_values.std())
 
     def to_csv(self, target_file):
         """Export the interrelation matrix to a CSV file
