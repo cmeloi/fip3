@@ -183,8 +183,6 @@ class InterrelationProfile(object):
         """Provides mean value of all interrelation values within the profile, including imputed values.
         Implemented individually within different FeatureInterrelation types, due to imputation differences.
         """
-        #  interrelation_sum += self._get_imputation_value(f1, f2)  # TODO: multiply by implicit interrelation count
-        #  return interrelation_sum / self.num_interrelations()
         raise NotImplementedError
 
     def mean_self_relation_value(self):
@@ -270,6 +268,31 @@ class CooccurrenceProfile(InterrelationProfile):
 
     def _get_imputation_value(self, *args):
         return 0
+
+    def mean_interrelation_value(self):
+        """Provides mean value of all interrelation values within the profile, including imputed values.
+        Ignores self-relations.
+
+        :return: the mean interrelation value as a float
+        """
+        raw_interrelations_sum = self.select_raw_interrelations()['value'].sum()
+        return raw_interrelations_sum / self.num_max_interrelations()
+
+    def standard_interrelation_deviation(self):
+        """Provides standard deviation for all interrelation values within the profile, including imputed values.
+        Ignores self-relations.
+
+        :return: the standard deviation value of interrelations as a float
+        """
+        max_interrelations = self.num_max_interrelations()
+        raw_interrelations = self.select_raw_interrelations()
+        num_imputations = max_interrelations - raw_interrelations.count()
+        mean = self.mean_interrelation_value()
+        sum_raw_squared_differences = raw_interrelations['value'].apply(lambda x: (x - mean)**2).sum()
+        sum_imputed_squared_differences = (mean**2)*num_imputations
+        standard_deviation = numpy.sqrt((sum_raw_squared_differences + sum_imputed_squared_differences)
+                                        / max_interrelations)
+        return float(standard_deviation)
 
     def __add__(self, other):
         self.df = self.df.add(other.df, fill_value=0)
