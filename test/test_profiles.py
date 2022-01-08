@@ -81,7 +81,7 @@ class TestCooccurrenceProfile(unittest.TestCase):
         p = CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES)
         num_raw_interrelations = p.num_raw_interrelations()
         measured_interrelations = 0
-        for f1, f2, value in p.feature_interrelations():
+        for f1, f2, value in p.iterate_feature_interrelations():
             measured_interrelations += 1
             self.assertNotEqual(f1, f2)
             self.assertEqual(int(value), COOCCURRENCE_COUNTS[(f1, f2)])
@@ -104,7 +104,7 @@ class TestCooccurrenceProfile(unittest.TestCase):
         interrelation_values = [value for features, value in COOCCURRENCE_COUNTS.items()
                                 if features[0] != features[1]]
         interrelation_values_std = statistics.stdev(interrelation_values)
-        self.assertEqual(p.raw_standard_interrelation_deviation(), interrelation_values_std)
+        self.assertEqual(p.standard_raw_interrelation_deviation(), interrelation_values_std)
 
     def test_standard_self_relation_deviation(self):
         p = CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES)
@@ -112,6 +112,25 @@ class TestCooccurrenceProfile(unittest.TestCase):
                                 if features[0] == features[1]]
         interrelation_values_std = statistics.stdev(interrelation_values)
         self.assertEqual(p.standard_self_relation_deviation(), interrelation_values_std)
+
+    def test_mean_raw_interrelation_value(self):
+        p = CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES)
+        interrelation_values = [value for features, value in COOCCURRENCE_COUNTS.items()
+                                if features[0] != features[1]]
+        interrelation_values_std = statistics.mean(interrelation_values)
+        self.assertEqual(p.mean_raw_interrelation_value(), interrelation_values_std)
+
+    def test_mean_self_relation_value(self):
+        p = CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES)
+        interrelation_values = [value for features, value in COOCCURRENCE_COUNTS.items()
+                                if features[0] == features[1]]
+        interrelation_values_std = statistics.mean(interrelation_values)
+        self.assertEqual(p.mean_self_relation_value(), interrelation_values_std)
+
+    def test_convert_to_zscore(self):
+        p = CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES)
+        zscores_self_relations = {value for features, value in COOCCURRENCE_COUNTS.items()
+                                  if features[0] == features[1]}
 
 
 class TestCooccurrenceProbabilityProfile(unittest.TestCase):

@@ -119,38 +119,14 @@ class InterrelationProfile(object):
         """
         return set(self.df.index.unique(level='feature1'))
 
-    def feature_interrelations(self):
+    def iterate_feature_interrelations(self):
         """Yields all explicit interrelations values between features in the profile, in a tuple.
         Omits self-relations of features.
 
         :return: yields tuples of (feature1, feature2, interrelation_value)
         """
-        for multiindex, value in self.df.iterrows():
-            if multiindex[0] == multiindex[1]:
-                continue
+        for multiindex, value in self.select_raw_interrelations().iterrows():
             yield multiindex[0], multiindex[1], value
-
-    @abstractmethod
-    def mean_interrelation_value(self):
-        """Provides mean value of all interrelation values within the profile, including imputed values.
-        Implemented individually within different FeatureInterrelation types, due to imputation differences.
-        """
-        #  interrelation_sum += self._get_imputation_value(f1, f2)  # TODO: multiply by implicit interrelation count
-        #  return interrelation_sum / self.num_interrelations()
-        raise NotImplementedError
-
-    def mean_raw_interrelation_value(self):
-        """Provides mean value of all explicit interrelation values within the profile, i.e. not counting in
-        the imputation values.
-
-        :return: the mean explicit interrelation value as a float
-        """
-        num_raw_interrelations = 0
-        running_sum = 0.0
-        for f1, f2, value in self.feature_interrelations():
-            num_raw_interrelations += 1
-            running_sum += value
-        return running_sum / num_raw_interrelations
 
     def num_max_interrelations(self):
         """Provides the count of all possible feature interrelations that can exist within the profile,
@@ -193,7 +169,7 @@ class InterrelationProfile(object):
         explicit_values = self.select_self_relations()['value']
         return float(explicit_values.std())
 
-    def raw_standard_interrelation_deviation(self):
+    def standard_raw_interrelation_deviation(self):
         """Provides standard deviation from all explicit (i.e. non-imputed) interrelation values within the profile.
         Ignores self-relations.
 
@@ -201,6 +177,32 @@ class InterrelationProfile(object):
         """
         explicit_values = self.select_raw_interrelations()['value']
         return float(explicit_values.std())
+
+    @abstractmethod
+    def mean_interrelation_value(self):
+        """Provides mean value of all interrelation values within the profile, including imputed values.
+        Implemented individually within different FeatureInterrelation types, due to imputation differences.
+        """
+        #  interrelation_sum += self._get_imputation_value(f1, f2)  # TODO: multiply by implicit interrelation count
+        #  return interrelation_sum / self.num_interrelations()
+        raise NotImplementedError
+
+    def mean_self_relation_value(self):
+        """Provides mean value of all self-relation values within the profile.
+        Ignores interrelations.
+
+        :return: the mean explicit interrelation value as a float
+        """
+        return self.select_self_relations()['value'].mean()
+
+    def mean_raw_interrelation_value(self):
+        """Provides mean value of all explicit interrelation values within the profile, i.e. not counting in
+        the imputation values.
+        Ignores self-relations.
+
+        :return: the mean explicit interrelation value as a float
+        """
+        return self.select_raw_interrelations()['value'].mean()
 
     def to_csv(self, target_file):
         """Export the interrelation matrix to a CSV file
