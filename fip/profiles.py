@@ -46,13 +46,34 @@ class InterrelationProfile(object):
                 yield str(feature), str(other_feature)
 
     def select_self_relations(self):
+        """Provides all feature self-relations within the profile as a DataFrame subset selection.
+
+        :return: feature self-relations as a Pandas DataFrame subset
+        """
         return self.df.loc[self.df.index.get_level_values('feature1') == self.df.index.get_level_values('feature2')]
 
     def select_raw_interrelations(self):
+        """Provides all explicit (i.e. not imputed) feature interrelations (i.e. not self-relations) within the profile
+        as a DataFrame subset selection.
+
+        :return: feature interrelations as a Pandas DataFrame subset
+        """
         return self.df.loc[self.df.index.get_level_values('feature1') != self.df.index.get_level_values('feature2')]
 
     def select_all(self):
+        """Provides all explicit feature relations (both self-relations and interrelations) within the profile
+        as a DataFrame. The DataFrame itself is also directly accessible through InterrelationProfile.df
+
+        :return: all feature relations as a Pandas DataFrame
+        """
         return self.df
+
+    def self_relations_dict(self):
+        """Returns self-relation values of all features in the profile as a dictionary.
+
+        :return: a dictionary of {feature: self_interrelation_value} pairs
+        """
+        return {str(multiindex[0]): float(value) for multiindex, value in self.select_self_relations().iterrows()}
 
     def convert_to_zscore(self):
         """Converts the values within the InterrelationProfile into Z-scores, i.e. subtracts mean,
@@ -97,13 +118,6 @@ class InterrelationProfile(object):
         :return: feature names as a set of strings
         """
         return set(self.df.index.unique(level='feature1'))
-
-    def feature_self_relations(self):
-        """Returns self-relation values of all features in the profile as a dictionary.
-
-        :return: a dictionary of {feature: self_interrelation_value} pairs
-        """
-        return {feature: self.interrelation_value(feature, feature) for feature in self.distinct_features()}
 
     def feature_interrelations(self):
         """Yields all explicit interrelations values between features in the profile, in a tuple.
@@ -281,7 +295,7 @@ class CooccurrenceProbabilityProfile(InterrelationProfile):
 
         :return: a dictionary of feature:probability
         """
-        standalone_probabilities = self.feature_self_relations()
+        standalone_probabilities = self.self_relations_dict()
         vector_count = self.attrs['vector_count']
         feature2imputable_standalone_probability = {feature: (feature_probability*vector_count + 1) / (vector_count + 1)
                                                     for feature, feature_probability in standalone_probabilities.items()}
@@ -308,7 +322,7 @@ class PointwiseMutualInformationProfile(InterrelationProfile):
         kwargs['vector_count'] = cooccurrence_probability_profile.attrs['vector_count']
         kwargs['imputation_probability'] = cooccurrence_probability_profile.attrs['imputation_probability']
         kwargs['imputation_standalone_probabilities'] = cooccurrence_probability_profile.imputable_standalone_probabilities()
-        standalone_probabilities = cooccurrence_probability_profile.feature_self_relations()
+        standalone_probabilities = cooccurrence_probability_profile.self_relations_dict()
         df = cooccurrence_probability_profile.df.apply(
             lambda x: numpy.log2(x / (standalone_probabilities[x.name[0]] * standalone_probabilities[x.name[1]]))
             if x.name[0] != x.name[1] else x * 0,
