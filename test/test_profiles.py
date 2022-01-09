@@ -183,6 +183,39 @@ class TestCooccurrenceProbabilityProfile(unittest.TestCase):
         reference_profile.df.sort_index(inplace=True)
         self.assertTrue(p.df.equals(reference_profile.df))
 
+    def test_mean_interrelation_value(self):
+        p = CooccurrenceProbabilityProfile.from_cooccurrence_profile(
+            CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES))
+        imputation_probability = 1.0 / (len(FEATURE_TUPLES) + 1)
+        interrelation_values = [value/len(FEATURE_TUPLES) for features, value in COOCCURRENCE_COUNTS.items()
+                                if features[0] != features[1]]
+        interrelation_values_sum = sum(interrelation_values)
+        features = set()
+        for feature_tuple in FEATURE_TUPLES:
+            features.update(feature_tuple)
+        feature_count = len(features)
+        interrelation_max_count = (feature_count * feature_count - feature_count) / 2
+        num_imputed_values = interrelation_max_count - len(interrelation_values)
+        interrelation_values_sum += imputation_probability*num_imputed_values
+        mean_interrelation_value = float(interrelation_values_sum) / interrelation_max_count
+        self.assertEqual(p.mean_interrelation_value(), mean_interrelation_value)
+
+    def test_standard_interrelation_deviation(self):
+        p = CooccurrenceProbabilityProfile.from_cooccurrence_profile(
+            CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES))
+        features = set()
+        for feature_tuple in FEATURE_TUPLES:
+            features.update(feature_tuple)
+        feature_count = len(features)
+        interrelation_max_count = (feature_count * feature_count - feature_count) / 2
+        imputation_probability = 1.0 / (len(FEATURE_TUPLES) + 1)
+        interrelation_values = [value for features, value in COOCCURRENCE_PROBABILITIES.items()
+                                if features[0] != features[1]]
+        interrelation_values.extend([imputation_probability
+                                     for i in range(int(interrelation_max_count - len(interrelation_values)))])
+        interrelation_values_std = statistics.pstdev(interrelation_values)
+        self.assertEqual(p.standard_interrelation_deviation(), interrelation_values_std)
+
 
 class TestPointwiseMutualInformationProfile(unittest.TestCase):
     def test_pmi_calculation(self):

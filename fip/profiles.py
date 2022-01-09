@@ -336,6 +336,36 @@ class CooccurrenceProbabilityProfile(InterrelationProfile):
                                                     for feature, feature_probability in standalone_probabilities.items()}
         return feature2imputable_standalone_probability
 
+    def mean_interrelation_value(self):
+        """Provides mean value of all interrelation values within the profile, including imputed values.
+        Ignores self-relations.
+
+        :return: the mean interrelation value as a float
+        """
+        raw_interrelations_sum = self.select_raw_interrelations()['value'].sum()
+        max_interrelations = self.num_max_interrelations()
+        raw_interrelations = self.select_raw_interrelations()
+        num_imputations = max_interrelations - raw_interrelations.count()
+        imputed_interrelations_sum = self.attrs['imputation_probability']*num_imputations
+        combined_interrelations_sum = raw_interrelations_sum + imputed_interrelations_sum
+        return float(combined_interrelations_sum / max_interrelations)
+
+    def standard_interrelation_deviation(self):
+        """Provides standard deviation for all interrelation values within the profile, including imputed values.
+        Ignores self-relations.
+
+        :return: the standard deviation value of interrelations as a float
+        """
+        max_interrelations = self.num_max_interrelations()
+        raw_interrelations = self.select_raw_interrelations()
+        num_imputations = max_interrelations - raw_interrelations.count()
+        mean = self.mean_interrelation_value()
+        sum_raw_squared_differences = raw_interrelations['value'].apply(lambda x: (x - mean)**2).sum()
+        sum_imputed_squared_differences = ((self.attrs['imputation_probability'] - mean)**2)*num_imputations
+        standard_deviation = numpy.sqrt((sum_raw_squared_differences + sum_imputed_squared_differences)
+                                        / max_interrelations)
+        return float(standard_deviation)
+
     def _get_imputation_value(self, *args):
         return self.attrs['imputation_probability']
 
