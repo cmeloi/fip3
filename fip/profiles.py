@@ -100,10 +100,11 @@ class InterrelationProfile(object):
             else:
                 return self.df.at[(f2, f1), 'value']
         except KeyError:
-            return self._get_imputation_value(f1, f2)
+            return self.get_imputation_value(f1, f2)
 
     def features_interrelation_values(self, features):
-        """Provides interrelation values within the profile for all features within a given feature list.
+        """Yields interrelation values within the profile for all features within a given feature list.
+        Includes imputed values.
 
         :param features: features to look up within the profile
         :return: a generator yielding the interrelation values, usually floats or ints
@@ -120,8 +121,9 @@ class InterrelationProfile(object):
         return set(self.df.index.unique(level='feature1'))
 
     def iterate_feature_interrelations(self):
-        """Yields all explicit interrelations values between features in the profile, in a tuple.
+        """Yields all interrelations values between features in the profile, in a tuple.
         Omits self-relations of features.
+        Includes imputed values.
 
         :return: yields tuples of (feature1, feature2, interrelation_value)
         """
@@ -211,7 +213,10 @@ class InterrelationProfile(object):
         return self.df.to_csv(target_file)
 
     @abstractmethod
-    def _get_imputation_value(self, f1, f2):
+    def get_imputation_value(self, f1, f2):
+        """Provides the imputation value for feature pair that does not occur within the interrelation profile.
+        Implemented individually within different FeatureInterrelation types, due to imputation differences.
+        """
         raise NotImplementedError
 
     def __getitem__(self, f1, f2=None):
@@ -266,7 +271,12 @@ class CooccurrenceProfile(InterrelationProfile):
         return (cls.from_dict(positive_counter, vector_count=positive_vectors),
                 cls.from_dict(negative_counter, vector_count=negative_vectors))
 
-    def _get_imputation_value(self, *args):
+    def get_imputation_value(self, *args):
+        """Returns interrelation imputation value. For co-occurrences, this is flat 0.
+        Method implemented for InterrelationMatrix conformity.
+
+        :return: flat 0
+        """
         return 0
 
     def mean_interrelation_value(self):
@@ -366,8 +376,13 @@ class CooccurrenceProbabilityProfile(InterrelationProfile):
                                         / max_interrelations)
         return float(standard_deviation)
 
-    def _get_imputation_value(self, *args):
-        return self.attrs['imputation_probability']
+    def get_imputation_value(self, *args):
+        """Interrelation probability imputation based on "most-optimistic" scenario that the
+        co-occurrence would happen in the n+1 sample.
+
+        :return: the imputation value as a float
+        """
+        return float(self.attrs['imputation_probability'])
 
 
 class PointwiseMutualInformationProfile(InterrelationProfile):
@@ -394,7 +409,7 @@ class PointwiseMutualInformationProfile(InterrelationProfile):
             axis=1)  # the if/else clause because P(A AND A) = P(A), not P(A)*P(A). And log2(P(A)/P(A)) = log2(1) = 0
         return cls(df, *args, **kwargs)
 
-    def _get_imputation_value(self, feature1, feature2):
+    def get_imputation_value(self, feature1, feature2):
         """PMI imputation based on "most-optimistic" scenario that the co-occurrence would happen in the n+1 sample
 
         :param feature1: First feature for PMI imputation
@@ -439,7 +454,7 @@ class PointwiseKLDivergenceProfile(InterrelationProfile):
         df.dropna(inplace=True)
         return cls(df, *args, **kwargs)
 
-    def _get_imputation_value(self, *args):
+    def get_imputation_value(self, *args):
         """PKLD imputation for the case that the features do not co-occur in neither the evaluated, nor the reference
          interrelation profile. It is based on the imputation probability for the individual feature profiles.
 
