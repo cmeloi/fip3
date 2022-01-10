@@ -496,3 +496,31 @@ class PointwiseKLDivergenceProfile(InterrelationProfile):
         :return: Imputation pointwise KLD for feature co-occurrence appearing in neither profile
         """
         return self.attrs['imputation_value']
+
+    def mean_interrelation_value(self):
+        """Provides mean value of all interrelation values within the profile, including imputed values.
+        Ignores self-relations.
+
+        :return: the mean interrelation value as a float
+        """
+        raw_interrelations_sum = self.select_raw_interrelations()['value'].sum()
+        max_interrelations = self.num_max_interrelations()
+        num_imputations = max_interrelations - self.select_raw_interrelations().count()
+        imputed_interrelations_sum = self.attrs['imputation_value']*num_imputations
+        combined_interrelations_sum = raw_interrelations_sum + imputed_interrelations_sum
+        return float(combined_interrelations_sum / max_interrelations)
+
+    def standard_interrelation_deviation(self):
+        """Provides standard deviation for all interrelation values within the profile, including imputed values.
+        Ignores self-relations.
+
+        :return: the standard deviation value of interrelations as a float
+        """
+        max_interrelations = self.num_max_interrelations()
+        num_imputations = max_interrelations - self.select_raw_interrelations().count()
+        mean = self.mean_interrelation_value()
+        sum_raw_squared_differences = raw_interrelations['value'].apply(lambda x: (x - mean)**2).sum()
+        sum_imputed_squared_differences = ((self.attrs['imputation_value'] - mean)**2)*num_imputations
+        standard_deviation = numpy.sqrt((sum_raw_squared_differences + sum_imputed_squared_differences)
+                                        / max_interrelations)
+        return float(standard_deviation)
