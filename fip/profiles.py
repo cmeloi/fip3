@@ -1,7 +1,6 @@
 from collections import Counter
 from abc import ABCMeta, abstractmethod
 
-import numpy as np
 import pandas
 import numpy
 

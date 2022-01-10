@@ -2,6 +2,7 @@ import unittest
 import statistics
 
 from pandas import DataFrame
+import numpy as np
 
 from fip.profiles import *
 
