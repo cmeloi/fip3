@@ -468,7 +468,7 @@ class PointwiseKLDivergenceProfile(InterrelationProfile):
         """Creates a pointwise KL Divergence interrelation profile quantifying how well do the co-occurrence
         probabilities in the given interrelation profile match those in the given reference interrelation profile.
 
-        pKLD(F1|F2) = P(F1|F2) / Q(F1|F2)
+        pKLD(F1|F2) = log2( P(F1|F2) / Q(F1|F2) )
 
         where F1 and F2 are observed features, P(F1|F2) is their co-occurrence probability within the evaluated
         interrelation profile, and Q(F1|F2) is the same within the reference interrelation profile.
