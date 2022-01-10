@@ -79,13 +79,13 @@ class TestCooccurrenceProfile(unittest.TestCase):
 
     def test_feature_interrelations(self):
         p = CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES)
-        num_raw_interrelations = p.num_raw_interrelations()
+        num_max_interrelations = p.num_max_interrelations()
         measured_interrelations = 0
         for f1, f2, value in p.iterate_feature_interrelations():
             measured_interrelations += 1
             self.assertNotEqual(f1, f2)
-            self.assertEqual(int(value), COOCCURRENCE_COUNTS[(f1, f2)])
-        self.assertEqual(num_raw_interrelations, measured_interrelations)
+            self.assertEqual(int(value), COOCCURRENCE_COUNTS.get((f1, f2), 0))
+        self.assertEqual(num_max_interrelations, measured_interrelations)
 
     def test_select_self_relations(self):
         p = CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES)

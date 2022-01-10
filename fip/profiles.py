@@ -33,16 +33,20 @@ class InterrelationProfile(object):
         return cls(df, *args, **kwargs)
 
     @staticmethod
-    def features2cooccurrences(features):
+    def features2cooccurrences(features, *, omit_self_relations=False):
         """Processes an iterable of features into a set of feature co-occurrences.
 
         :param features: an iterable of features to process, e.g. (feature1, feature2, feature4, ...)
+        :param omit_self_relations: Whether to ignore feature self-relations, i.e. (f1, f1). Default False.
         :return: a co-occurrence generator
         """
         features = list(set(features))  # get rid of duplicates
         features.sort()
+        offset = 0
+        if omit_self_relations:
+            offset = 1
         for i, feature in enumerate(features):
-            for other_feature in features[i:]:
+            for other_feature in features[i + offset:]:
                 yield str(feature), str(other_feature)
 
     def select_self_relations(self):
@@ -93,7 +97,7 @@ class InterrelationProfile(object):
         :return: The interrelation value between the two features within the profile. Usually int or float.
         """
         if f2 is None:
-            return self.df.at[(f1, f1), 'value']
+            f2 = f1
         try:
             if f1 <= f2:
                 return self.df.at[(f1, f2), 'value']
@@ -127,8 +131,8 @@ class InterrelationProfile(object):
 
         :return: yields tuples of (feature1, feature2, interrelation_value)
         """
-        for multiindex, value in self.select_raw_interrelations().iterrows():
-            yield multiindex[0], multiindex[1], value
+        for f1, f2 in self.features2cooccurrences(self.distinct_features(), omit_self_relations=True):
+            yield f1, f2, self.interrelation_value(f1, f2)
 
     def num_max_interrelations(self):
         """Provides the count of all possible feature interrelations that can exist within the profile,
@@ -146,6 +150,9 @@ class InterrelationProfile(object):
         :return: count of all explicit interrelation values
         """
         return len(self.df.index) - len(self.distinct_features())
+
+    def drop_minor_interrelations(self, zcore_cutoff=1):
+        raise NotImplementedError
 
     def num_features(self):
         """Provides the count of all features (individual features, not their interrelations)
@@ -421,7 +428,35 @@ class PointwiseMutualInformationProfile(InterrelationProfile):
         generic_imputation_probability = self.attrs['imputation_probability']
         feature1_imputation_probability = self.attrs['imputation_standalone_probabilities'].get(feature1, generic_imputation_probability)
         feature2_imputation_probability = self.attrs['imputation_standalone_probabilities'].get(feature2, generic_imputation_probability)
-        return generic_imputation_probability / (feature1_imputation_probability * feature2_imputation_probability)
+        return numpy.log2(generic_imputation_probability / (feature1_imputation_probability * feature2_imputation_probability))
+
+    def mean_interrelation_value(self):
+        """Provides mean value of all PMI values within the profile, including imputed values.
+        Ignores self-relations.
+
+        :return: the mean PMI value as a float
+        """
+        pmi_sum = 0.0
+        num_interrelations = 0
+        for f1, f2, value in self.iterate_feature_interrelations():
+            pmi_sum += value
+            num_interrelations += 1
+        return pmi_sum / num_interrelations
+
+    def standard_interrelation_deviation(self):
+        """Provides standard deviation for all interrelation values within the profile, including imputed values.
+        Ignores self-relations.
+
+        :return: the standard deviation value of interrelations as a float
+        """
+        mean = self.mean_interrelation_value()
+        sum_raw_squared_differences = 0
+        count_interrelations = 0
+        for f1, f2, value in self.iterate_feature_interrelations():
+            sum_raw_squared_differences += (value - mean)**2
+            count_interrelations += 1
+        standard_deviation = numpy.sqrt((sum_raw_squared_differences / count_interrelations))
+        return float(standard_deviation)
 
 
 class PointwiseKLDivergenceProfile(InterrelationProfile):
@@ -455,9 +490,9 @@ class PointwiseKLDivergenceProfile(InterrelationProfile):
         return cls(df, *args, **kwargs)
 
     def get_imputation_value(self, *args):
-        """PKLD imputation for the case that the features do not co-occur in neither the evaluated, nor the reference
-         interrelation profile. It is based on the imputation probability for the individual feature profiles.
+        """Pointwise KL imputation for the case that the features do not co-occur in neither the evaluated, nor the reference
+        interrelation profile. It is based on the imputation probability for the individual feature profiles.
 
-        :return: Imputation PKLD for feature co-occurrence appearing in neither profile
+        :return: Imputation pointwise KLD for feature co-occurrence appearing in neither profile
         """
         return self.attrs['imputation_value']
