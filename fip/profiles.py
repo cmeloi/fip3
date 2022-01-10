@@ -480,13 +480,14 @@ class PointwiseKLDivergenceProfile(InterrelationProfile):
         :param kwargs: any further keyword arguments to be passed to the InterrelationProfile init
         :return: PointwiseKLDivergenceProfile instance
         """
-        kwargs['imputation_probability_main'] = cooccurrence_probability_profile.attrs['imputation_probability']
-        kwargs['imputation_probability_ref'] = reference_probability_profile.attrs['imputation_probability']
-        kwargs['imputation_value'] = kwargs['imputation_probability_main'] / kwargs['imputation_probability_ref']
-        # TODO: do merging of the profiles, with partial imputation for pairs that occur in at least one
-        df = cooccurrence_probability_profile.df.apply(
-            lambda x: numpy.log2(x / reference_probability_profile.interrelation_value(x.name[0], x.name[1])), axis=1)
-        df.dropna(inplace=True)
+        imputation_probability_main = cooccurrence_probability_profile.get_imputation_value()
+        imputation_probability_ref = reference_probability_profile.get_imputation_value()
+        kwargs['imputation_value'] = numpy.log2(imputation_probability_main / imputation_probability_ref)
+        df = pandas.merge(cooccurrence_probability_profile.df, reference_probability_profile.df,
+                          on=('feature1', 'feature2'), how='outer', suffixes=('_main', '_reference'))
+        df = pandas.DataFrame(data=numpy.log2(df['value_main'].fillna(imputation_probability_main)
+                                              / df['value_reference'].fillna(imputation_probability_ref)),
+                              columns=['value'])
         return cls(df, *args, **kwargs)
 
     def get_imputation_value(self, *args):
