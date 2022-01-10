@@ -233,6 +233,9 @@ class TestPointwiseKLDivergenceProfile(unittest.TestCase):
     def test_pointwise_kld_calculation(self):
         cpp1 = CooccurrenceProbabilityProfile.from_cooccurrence_profile(
                 CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES))
+        p = PointwiseKLDivergenceProfile.from_cooccurrence_probability_profiles(cpp1, cpp1)
+        self.assertTrue((p.df['value'] == 0).all(), "KL divergence with itself should be 0")
+        self.assertEqual(p.attrs['imputation_value'], 0, "KL divergence imputation for itself should be 0")
         p = PointwiseKLDivergenceProfile.from_cooccurrence_probability_profiles(
             cpp1,
             CooccurrenceProbabilityProfile.from_cooccurrence_profile(
