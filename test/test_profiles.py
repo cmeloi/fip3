@@ -250,5 +250,26 @@ class TestPointwiseKLDivergenceProfile(unittest.TestCase):
         self.assertEqual(cpp1.num_max_interrelations(), p.num_max_interrelations())
 
 
+class TestPointwiseJeffreysDivergenceProfile(unittest.TestCase):
+    def test_pointwise_jd_calculation(self):
+        cpp1 = CooccurrenceProbabilityProfile.from_cooccurrence_profile(
+                CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES))
+        p = PointwiseJeffreysDivergenceProfile.from_cooccurrence_probability_profiles(cpp1, cpp1)
+        self.assertTrue((p.df['value'] == 0).all(), "KL divergence with itself should be 0")
+        self.assertEqual(p.attrs['imputation_value'], 0, "KL divergence imputation for itself should be 0")
+        p = PointwiseJeffreysDivergenceProfile.from_cooccurrence_probability_profiles(
+            cpp1,
+            CooccurrenceProbabilityProfile.from_cooccurrence_profile(
+                CooccurrenceProfile.from_feature_lists([('a', 'b')])))
+        self.assertEqual(p.interrelation_value('a', 'b'), np.log2(2.0 / 3.0) + np.log2(3.0 / 2.0))
+        p = PointwiseJeffreysDivergenceProfile.from_cooccurrence_probability_profiles(
+            CooccurrenceProbabilityProfile.from_cooccurrence_profile(
+                CooccurrenceProfile.from_feature_lists([('a', 'b')])),
+            cpp1)
+        self.assertEqual(p.interrelation_value('a', 'b'), np.log2(2.0 / 3.0) + np.log2(3.0 / 2.0))
+        self.assertEqual(cpp1.num_raw_interrelations(), p.num_raw_interrelations())
+        self.assertEqual(cpp1.num_max_interrelations(), p.num_max_interrelations())
+
+
 if __name__ == '__main__':
     unittest.main()

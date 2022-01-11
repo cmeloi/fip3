@@ -233,6 +233,7 @@ class CooccurrenceProfile(InterrelationProfile):
     """A feature Co-occurrence profile, which is usually a core profile for further interrelation analysis.
     Holds raw counts on how many times did the features occur and co-occur within the characterized set.
     """
+
     @classmethod
     def from_feature_lists(cls, feature_lists, *args, **kwargs):
         """Generate a Co-occurrence profile from an iterable of feature lists.
@@ -304,8 +305,8 @@ class CooccurrenceProfile(InterrelationProfile):
         raw_interrelations = self.select_raw_interrelations()
         num_imputations = max_interrelations - raw_interrelations.count()
         mean = self.mean_interrelation_value()
-        sum_raw_squared_differences = raw_interrelations['value'].apply(lambda x: (x - mean)**2).sum()
-        sum_imputed_squared_differences = (mean**2)*num_imputations
+        sum_raw_squared_differences = raw_interrelations['value'].apply(lambda x: (x - mean) ** 2).sum()
+        sum_imputed_squared_differences = (mean ** 2) * num_imputations
         standard_deviation = numpy.sqrt((sum_raw_squared_differences + sum_imputed_squared_differences)
                                         / max_interrelations)
         return float(standard_deviation)
@@ -320,6 +321,7 @@ class CooccurrenceProfile(InterrelationProfile):
 class CooccurrenceProbabilityProfile(InterrelationProfile):
     """A co-occurrence probability profile, holding information about the observed probabilities for feature pair
     co-occurrences within the characterized set."""
+
     @classmethod
     def from_cooccurrence_profile(cls, cooccurrence_profile, *args, vector_count=None, **kwargs):
         """Creates a Cooccurrence Probability Profile from the provided Cooccurrence Profile.
@@ -348,8 +350,9 @@ class CooccurrenceProbabilityProfile(InterrelationProfile):
         """
         standalone_probabilities = self.self_relations_dict()
         vector_count = self.attrs['vector_count']
-        feature2imputable_standalone_probability = {feature: (feature_probability*vector_count + 1) / (vector_count + 1)
-                                                    for feature, feature_probability in standalone_probabilities.items()}
+        feature2imputable_standalone_probability = {
+            feature: (feature_probability * vector_count + 1) / (vector_count + 1)
+            for feature, feature_probability in standalone_probabilities.items()}
         return feature2imputable_standalone_probability
 
     def mean_interrelation_value(self):
@@ -362,7 +365,7 @@ class CooccurrenceProbabilityProfile(InterrelationProfile):
         max_interrelations = self.num_max_interrelations()
         raw_interrelations = self.select_raw_interrelations()
         num_imputations = max_interrelations - raw_interrelations.count()
-        imputed_interrelations_sum = self.attrs['imputation_probability']*num_imputations
+        imputed_interrelations_sum = self.attrs['imputation_probability'] * num_imputations
         combined_interrelations_sum = raw_interrelations_sum + imputed_interrelations_sum
         return float(combined_interrelations_sum / max_interrelations)
 
@@ -376,8 +379,8 @@ class CooccurrenceProbabilityProfile(InterrelationProfile):
         raw_interrelations = self.select_raw_interrelations()
         num_imputations = max_interrelations - raw_interrelations.count()
         mean = self.mean_interrelation_value()
-        sum_raw_squared_differences = raw_interrelations['value'].apply(lambda x: (x - mean)**2).sum()
-        sum_imputed_squared_differences = ((self.attrs['imputation_probability'] - mean)**2)*num_imputations
+        sum_raw_squared_differences = raw_interrelations['value'].apply(lambda x: (x - mean) ** 2).sum()
+        sum_imputed_squared_differences = ((self.attrs['imputation_probability'] - mean) ** 2) * num_imputations
         standard_deviation = numpy.sqrt((sum_raw_squared_differences + sum_imputed_squared_differences)
                                         / max_interrelations)
         return float(standard_deviation)
@@ -396,6 +399,7 @@ class PointwiseMutualInformationProfile(InterrelationProfile):
     present in the characterized set. PMI is a measure of association between two features - a ratio between the
     observed co-occurrence probability of the feature pair, versus the projected co-occurrence if the features
     were completely independent, based on their individual occurrence rate."""
+
     @classmethod
     def from_cooccurrence_probability_profile(cls, cooccurrence_probability_profile, *args, **kwargs):
         """Generate a PMI interrelation profile.
@@ -407,7 +411,8 @@ class PointwiseMutualInformationProfile(InterrelationProfile):
         """
         kwargs['vector_count'] = cooccurrence_probability_profile.attrs['vector_count']
         kwargs['imputation_probability'] = cooccurrence_probability_profile.attrs['imputation_probability']
-        kwargs['imputation_standalone_probabilities'] = cooccurrence_probability_profile.imputable_standalone_probabilities()
+        kwargs[
+            'imputation_standalone_probabilities'] = cooccurrence_probability_profile.imputable_standalone_probabilities()
         standalone_probabilities = cooccurrence_probability_profile.self_relations_dict()
         df = cooccurrence_probability_profile.df.apply(
             lambda x: numpy.log2(x / (standalone_probabilities[x.name[0]] * standalone_probabilities[x.name[1]]))
@@ -425,9 +430,12 @@ class PointwiseMutualInformationProfile(InterrelationProfile):
         if feature1 == feature2:
             return 0  # P(A AND A) = P(A), not P(A)*P(A). And log2(P(A)/P(A)) = log2(1) = 0
         generic_imputation_probability = self.attrs['imputation_probability']
-        feature1_imputation_probability = self.attrs['imputation_standalone_probabilities'].get(feature1, generic_imputation_probability)
-        feature2_imputation_probability = self.attrs['imputation_standalone_probabilities'].get(feature2, generic_imputation_probability)
-        return numpy.log2(generic_imputation_probability / (feature1_imputation_probability * feature2_imputation_probability))
+        feature1_imputation_probability = self.attrs['imputation_standalone_probabilities'].get(feature1,
+                                                                                                generic_imputation_probability)
+        feature2_imputation_probability = self.attrs['imputation_standalone_probabilities'].get(feature2,
+                                                                                                generic_imputation_probability)
+        return numpy.log2(
+            generic_imputation_probability / (feature1_imputation_probability * feature2_imputation_probability))
 
     def mean_interrelation_value(self):
         """Provides mean value of all PMI values within the profile, including imputed values.
@@ -452,7 +460,7 @@ class PointwiseMutualInformationProfile(InterrelationProfile):
         sum_raw_squared_differences = 0
         count_interrelations = 0
         for f1, f2, value in self.iterate_feature_interrelations():
-            sum_raw_squared_differences += (value - mean)**2
+            sum_raw_squared_differences += (value - mean) ** 2
             count_interrelations += 1
         standard_deviation = numpy.sqrt((sum_raw_squared_differences / count_interrelations))
         return float(standard_deviation)
@@ -463,8 +471,10 @@ class PointwiseKLDivergenceProfile(InterrelationProfile):
     distances for each feature pair, between its observed co-occurrence in the characterized set and its observed
     co-occurrence in a reference set.
     """
+
     @classmethod
-    def from_cooccurrence_probability_profiles(cls, cooccurrence_probability_profile, reference_probability_profile, *args, **kwargs):
+    def from_cooccurrence_probability_profiles(cls, cooccurrence_probability_profile, reference_probability_profile,
+                                               *args, **kwargs):
         """Creates a pointwise KL Divergence interrelation profile quantifying how well do the co-occurrence
         probabilities in the given interrelation profile match those in the given reference interrelation profile.
 
@@ -496,3 +506,39 @@ class PointwiseKLDivergenceProfile(InterrelationProfile):
         :return: Imputation pointwise KLD for feature co-occurrence appearing in neither profile
         """
         return self.attrs['imputation_value']
+
+
+class PointwiseJeffreysDivergenceProfile(PointwiseKLDivergenceProfile):
+    """An interrelation profile consisting of pointwise Jeffreys divergence values, a measure of statistical
+    distances for each feature pair, between its observed co-occurrence in the characterized set and its observed
+    co-occurrence in a reference set - and vice versa.
+    A symmetric variant of the KL divergence.
+    """
+
+    @classmethod
+    def from_cooccurrence_probability_profiles(cls, cooccurrence_probability_profile, reference_probability_profile,
+                                               *args, **kwargs):
+        """Creates a pointwise pointwise Jeffreys divergence interrelation profile quantifying how well do the co-occurrence
+        probabilities in the given interrelation profile match those in the given reference interrelation profile.
+
+        pJD(F1|F2) == pJD(F2|F1) = pKLD(F1|F2) + pKLD(F2|F1)
+
+        where F1 and F2 are observed features, pKLD(F1|F2) is their pointwise KL divergence.
+
+        :param cooccurrence_probability_profile: first CooccurrenceProbabilityProfile instance
+        :param reference_probability_profile: second CooccurrenceProbabilityProfile instance
+        :param args: any further arguments to be passed to the InterrelationProfile init
+        :param kwargs: any further keyword arguments to be passed to the InterrelationProfile init
+        :return: PointwiseJeffreysDivergenceProfile instance
+        """
+        imputation_probability_main = cooccurrence_probability_profile.get_imputation_value()
+        imputation_probability_ref = reference_probability_profile.get_imputation_value()
+        kwargs['imputation_value'] = numpy.log2(imputation_probability_main / imputation_probability_ref) \
+                                     + numpy.log2(imputation_probability_ref / imputation_probability_main)
+        df = pandas.merge(cooccurrence_probability_profile.df, reference_probability_profile.df,
+                          on=('feature1', 'feature2'), how='outer', suffixes=('_main', '_reference'))
+        main_values = df['value_main'].fillna(imputation_probability_main)
+        reference_values = df['value_reference'].fillna(imputation_probability_ref)
+        df = pandas.DataFrame(data=numpy.log2(main_values / reference_values) + numpy.log2(reference_values / main_values),
+                              columns=['value'])
+        return cls(df, *args, **kwargs)
