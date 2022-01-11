@@ -350,9 +350,8 @@ class CooccurrenceProbabilityProfile(InterrelationProfile):
         """
         standalone_probabilities = self.self_relations_dict()
         vector_count = self.attrs['vector_count']
-        feature2imputable_standalone_probability = {
-            feature: (feature_probability * vector_count + 1) / (vector_count + 1)
-            for feature, feature_probability in standalone_probabilities.items()}
+        feature2imputable_standalone_probability = {feature: (feature_probability*vector_count + 1) / (vector_count + 1)
+                                                    for feature, feature_probability in standalone_probabilities.items()}
         return feature2imputable_standalone_probability
 
     def mean_interrelation_value(self):
@@ -365,7 +364,7 @@ class CooccurrenceProbabilityProfile(InterrelationProfile):
         max_interrelations = self.num_max_interrelations()
         raw_interrelations = self.select_raw_interrelations()
         num_imputations = max_interrelations - raw_interrelations.count()
-        imputed_interrelations_sum = self.attrs['imputation_probability'] * num_imputations
+        imputed_interrelations_sum = self.attrs['imputation_probability']*num_imputations
         combined_interrelations_sum = raw_interrelations_sum + imputed_interrelations_sum
         return float(combined_interrelations_sum / max_interrelations)
 
@@ -379,8 +378,8 @@ class CooccurrenceProbabilityProfile(InterrelationProfile):
         raw_interrelations = self.select_raw_interrelations()
         num_imputations = max_interrelations - raw_interrelations.count()
         mean = self.mean_interrelation_value()
-        sum_raw_squared_differences = raw_interrelations['value'].apply(lambda x: (x - mean) ** 2).sum()
-        sum_imputed_squared_differences = ((self.attrs['imputation_probability'] - mean) ** 2) * num_imputations
+        sum_raw_squared_differences = raw_interrelations['value'].apply(lambda x: (x - mean)**2).sum()
+        sum_imputed_squared_differences = ((self.attrs['imputation_probability'] - mean)**2)*num_imputations
         standard_deviation = numpy.sqrt((sum_raw_squared_differences + sum_imputed_squared_differences)
                                         / max_interrelations)
         return float(standard_deviation)
@@ -411,8 +410,7 @@ class PointwiseMutualInformationProfile(InterrelationProfile):
         """
         kwargs['vector_count'] = cooccurrence_probability_profile.attrs['vector_count']
         kwargs['imputation_probability'] = cooccurrence_probability_profile.attrs['imputation_probability']
-        kwargs[
-            'imputation_standalone_probabilities'] = cooccurrence_probability_profile.imputable_standalone_probabilities()
+        kwargs['imputation_standalone_probabilities'] = cooccurrence_probability_profile.imputable_standalone_probabilities()
         standalone_probabilities = cooccurrence_probability_profile.self_relations_dict()
         df = cooccurrence_probability_profile.df.apply(
             lambda x: numpy.log2(x / (standalone_probabilities[x.name[0]] * standalone_probabilities[x.name[1]]))
@@ -478,7 +476,7 @@ class PointwiseKLDivergenceProfile(InterrelationProfile):
         """Creates a pointwise KL Divergence interrelation profile quantifying how well do the co-occurrence
         probabilities in the given interrelation profile match those in the given reference interrelation profile.
 
-        pKLD(F1|F2) = P(F1|F2) / Q(F1|F2)
+        pKLD(F1|F2) = log2( P(F1|F2) / Q(F1|F2) )
 
         where F1 and F2 are observed features, P(F1|F2) is their co-occurrence probability within the evaluated
         interrelation profile, and Q(F1|F2) is the same within the reference interrelation profile.
@@ -507,6 +505,33 @@ class PointwiseKLDivergenceProfile(InterrelationProfile):
         """
         return self.attrs['imputation_value']
 
+    def mean_interrelation_value(self):
+        """Provides mean value of all interrelation values within the profile, including imputed values.
+        Ignores self-relations.
+
+        :return: the mean interrelation value as a float
+        """
+        raw_interrelations_sum = self.select_raw_interrelations()['value'].sum()
+        max_interrelations = self.num_max_interrelations()
+        num_imputations = max_interrelations - self.select_raw_interrelations().count()
+        imputed_interrelations_sum = self.attrs['imputation_value']*num_imputations
+        combined_interrelations_sum = raw_interrelations_sum + imputed_interrelations_sum
+        return float(combined_interrelations_sum / max_interrelations)
+
+    def standard_interrelation_deviation(self):
+        """Provides standard deviation for all interrelation values within the profile, including imputed values.
+        Ignores self-relations.
+
+        :return: the standard deviation value of interrelations as a float
+        """
+        max_interrelations = self.num_max_interrelations()
+        num_imputations = max_interrelations - self.select_raw_interrelations().count()
+        mean = self.mean_interrelation_value()
+        sum_raw_squared_differences = raw_interrelations['value'].apply(lambda x: (x - mean)**2).sum()
+        sum_imputed_squared_differences = ((self.attrs['imputation_value'] - mean)**2)*num_imputations
+        standard_deviation = numpy.sqrt((sum_raw_squared_differences + sum_imputed_squared_differences)
+                                        / max_interrelations)
+        return float(standard_deviation)
 
 class PointwiseJeffreysDivergenceProfile(PointwiseKLDivergenceProfile):
     """An interrelation profile consisting of pointwise Jeffreys divergence values, a measure of statistical
