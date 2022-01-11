@@ -105,15 +105,16 @@ class InterrelationProfile(object):
         except KeyError:
             return self.get_imputation_value(f1, f2)
 
-    def features_interrelation_values(self, features):
+    def features_interrelation_values(self, features, *, omit_self_relations=False):
         """Yields interrelation values within the profile for all features within a given feature list.
         Includes imputed values.
 
         :param features: features to look up within the profile
+        :param omit_self_relations: whether to omit self-relations in the lookup, default False.
         :return: a generator yielding the interrelation values, usually floats or ints
         """
         # TODO: consider using df.index.intersection for this instead of loop
-        for feature, other_feature in self.features2cooccurrences(features):
+        for feature, other_feature in self.features2cooccurrences(features, omit_self_relations=omit_self_relations):
             yield self.interrelation_value(feature, other_feature)
 
     def distinct_features(self):
