@@ -524,14 +524,16 @@ class PointwiseKLDivergenceProfile(InterrelationProfile):
 
         :return: the standard deviation value of interrelations as a float
         """
+        raw_interrelations = self.select_raw_interrelations()
         max_interrelations = self.num_max_interrelations()
-        num_imputations = max_interrelations - self.select_raw_interrelations().count()
+        num_imputations = max_interrelations - raw_interrelations.count()
         mean = self.mean_interrelation_value()
         sum_raw_squared_differences = raw_interrelations['value'].apply(lambda x: (x - mean)**2).sum()
         sum_imputed_squared_differences = ((self.attrs['imputation_value'] - mean)**2)*num_imputations
         standard_deviation = numpy.sqrt((sum_raw_squared_differences + sum_imputed_squared_differences)
                                         / max_interrelations)
         return float(standard_deviation)
+
 
 class PointwiseJeffreysDivergenceProfile(PointwiseKLDivergenceProfile):
     """An interrelation profile consisting of pointwise Jeffreys divergence values, a measure of statistical
