@@ -88,10 +88,32 @@ class InterrelationProfile(object):
         """
         return self.df
 
-    def select_major_self_relations(self, zcore_cutoff=1):
+    def select_major_self_relations(self, zscore_cutoff=1.0):
+        """Provides all explicit feature self relations within the profile, that are higher or lower than the profile
+        average by amount of standard deviations provided by the zscore_cutoff value.
+        In other words, the zcore_cutoff is the relative relation strength cutoff based on the amount of standard
+        deviations for the individual interrelation values from their mean.
+
+        Returns a selection of the DataFrame. The DataFrame itself is also directly accessible through
+        InterrelationProfile.df
+
+        :param zscore_cutoff: Relative relation strength cutoff value. Default 1.0
+        :return: major feature self-relations as a Pandas DataFrame
+        """
         raise NotImplementedError
 
-    def select_major_interrelations(self, zcore_cutoff=1):
+    def select_major_interrelations(self, zscore_cutoff=1.0):
+        """Provides all explicit feature interrelations within the profile, that are higher or lower than the profile
+        average by amount of standard deviations provided by the zscore_cutoff value.
+        In other words, the zcore_cutoff is the relative relation strength cutoff based on the amount of standard
+        deviations for the individual interrelation values from their mean.
+
+        Returns a selection of the DataFrame. The DataFrame itself is also directly accessible through
+        InterrelationProfile.df
+
+        :param zscore_cutoff: Relative relation strength cutoff value. Default 1.0
+        :return: major feature interrelations as a Pandas DataFrame
+        """
         raise NotImplementedError
 
     def self_relations_dict(self):
