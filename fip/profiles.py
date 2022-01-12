@@ -1,8 +1,10 @@
+import numpy as np
 from collections import Counter
 from abc import ABCMeta, abstractmethod
 
 import pandas
 import numpy
+from functools import partial
 
 
 class InterrelationProfile(object):
@@ -48,6 +50,21 @@ class InterrelationProfile(object):
             for other_feature in features[i + offset:]:
                 yield str(feature), str(other_feature)
 
+    @staticmethod
+    def row_zscore(mean, standard_deviation, row, *, input_column_name='value', output_column_name='value'):
+        """A drop-in static method to calculate Z-score from a value, mean and standard deviation.
+        Z-score, aka. standard score, is the number of standard deviations a given value is from the mean.
+
+        :param mean: the mean value within the distribution
+        :param standard_deviation: the standard deviation within the distribution
+        :param row: a Pandas row to calculate the z score for
+        :param input_column_name: column name for the processed value, default 'value'
+        :param output_column_name: column name for the output z-score value, default 'value' (i.e. overwrite)
+        :return: modified row containing the z-score
+        """
+        row[output_column_name] = row[input_column_name] - mean / standard_deviation
+        return row
+
     def select_self_relations(self):
         """Provides all feature self-relations within the profile as a DataFrame subset selection.
 
@@ -71,6 +88,12 @@ class InterrelationProfile(object):
         """
         return self.df
 
+    def select_major_self_relations(self, zcore_cutoff=1):
+        raise NotImplementedError
+
+    def select_major_interrelations(self, zcore_cutoff=1):
+        raise NotImplementedError
+
     def self_relations_dict(self):
         """Returns self-relation values of all features in the profile as a dictionary.
 
@@ -84,8 +107,20 @@ class InterrelationProfile(object):
 
         :return: None, the InterrelationProfile is changed itself
         """
-        # TODO: Make split Z-score for self-relations and interrelations
-        self.df = (self.df - self.mean_interrelation_value()) / self.standard_interrelation_deviation()
+        print(self.df)
+        self_relations = self.select_self_relations().astype(float)
+        self_relations_mean = self.mean_self_relation_value()
+        self_relations_standard_deviation = self.standard_self_relation_deviation()
+        row_zscore_partial = partial(self.row_zscore, self_relations_mean, self_relations_standard_deviation)
+        self_relations_z_scores = self_relations.apply(row_zscore_partial, axis=1)
+        self.df.update(self_relations_z_scores, overwrite=True)
+        interrelations = self.select_raw_interrelations()
+        interrelations_mean = self.mean_interrelation_value()
+        interrelations_standard_deviation = self.standard_interrelation_deviation()
+        row_zscore_partial = partial(self.row_zscore, interrelations_mean, interrelations_standard_deviation)
+        interrelations_z_scores = interrelations.apply(row_zscore_partial, axis=1)
+        self.df.update(interrelations_z_scores, overwrite=True)
+        print(self.df)
 
     def interrelation_value(self, f1, f2=None):
         """Returns the interrelation value for the feature pair provided in the arguments.
@@ -150,9 +185,6 @@ class InterrelationProfile(object):
         :return: count of all explicit interrelation values
         """
         return len(self.df.index) - len(self.distinct_features())
-
-    def drop_minor_interrelations(self, zcore_cutoff=1):
-        raise NotImplementedError
 
     def num_features(self):
         """Provides the count of all features (individual features, not their interrelations)

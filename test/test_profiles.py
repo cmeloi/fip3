@@ -1,6 +1,7 @@
 import unittest
 import statistics
 
+import numpy
 from pandas import DataFrame
 import numpy as np
 
@@ -16,6 +17,16 @@ COOCCURRENCE_PMI = {cooccurrence: numpy.log2(probability / (
         COOCCURRENCE_PROBABILITIES[(cooccurrence[0], cooccurrence[0])] *
         COOCCURRENCE_PROBABILITIES[(cooccurrence[1], cooccurrence[1])])) if cooccurrence[0] != cooccurrence[1] else 0
                     for cooccurrence, probability in COOCCURRENCE_PROBABILITIES.items()}
+
+
+class TestInterrelationProfile(unittest.TestCase):
+    def test_row_zcore(self):
+        test_sequence = [1, 2, 2, 3, 4, 22]
+        mean = numpy.mean(test_sequence)
+        standard_deviation = numpy.std(test_sequence)
+        for x in test_sequence:
+            zscore = (x - mean) / standard_deviation
+            self.assertEqual(CooccurrenceProfile.row_zscore(x, mean, standard_deviation), zscore)
 
 
 class TestCooccurrenceProfile(unittest.TestCase):
@@ -161,6 +172,8 @@ class TestCooccurrenceProfile(unittest.TestCase):
                                   if features[0] == features[1]}
         interrelations_mean = p.mean_interrelation_value()
         interrelations_std = p.standard_interrelation_deviation()
+        p.convert_to_zscore()
+        print(p)
         # TODO: finish with imputed iterrelations
 
 
