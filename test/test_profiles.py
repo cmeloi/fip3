@@ -19,16 +19,6 @@ COOCCURRENCE_PMI = {cooccurrence: numpy.log2(probability / (
                     for cooccurrence, probability in COOCCURRENCE_PROBABILITIES.items()}
 
 
-class TestInterrelationProfile(unittest.TestCase):
-    def test_row_zcore(self):
-        test_sequence = [1, 2, 2, 3, 4, 22]
-        mean = numpy.mean(test_sequence)
-        standard_deviation = numpy.std(test_sequence)
-        for x in test_sequence:
-            zscore = (x - mean) / standard_deviation
-            self.assertEqual(CooccurrenceProfile.row_zscore(x, mean, standard_deviation), zscore)
-
-
 class TestCooccurrenceProfile(unittest.TestCase):
     def test_cooccurrence_counting(self):
         reference_profile = CooccurrenceProfile(DataFrame.from_dict(COOCCURRENCE_COUNTS,
@@ -165,16 +155,24 @@ class TestCooccurrenceProfile(unittest.TestCase):
 
     def test_convert_to_zscore(self):
         p = CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES)
+        prior_imputation_value = p.attrs['imputation_value']
         self_relations_mean = p.mean_self_relation_value()
         self_relations_std = p.standard_self_relation_deviation()
-        zscores_self_relations = {(value - self_relations_mean)/self_relations_std
+        zscores_self_relations = {features: (value - self_relations_mean)/self_relations_std
                                   for features, value in COOCCURRENCE_COUNTS.items()
                                   if features[0] == features[1]}
         interrelations_mean = p.mean_interrelation_value()
         interrelations_std = p.standard_interrelation_deviation()
+        zscores_interrelations = {features: (value - interrelations_mean)/interrelations_std
+                                  for features, value in COOCCURRENCE_COUNTS.items()
+                                  if features[0] != features[1]}
         p.convert_to_zscore()
-        print(p)
-        # TODO: finish with imputed iterrelations
+        for features, value in zscores_self_relations.items():
+            self.assertEqual(p.interrelation_value(features[0], features[1]), value)
+        for features, value in zscores_interrelations.items():
+            self.assertEqual(p.interrelation_value(features[0], features[1]), value)
+        self.assertEqual(p.attrs['imputation_value'],
+                         (prior_imputation_value - interrelations_mean) / interrelations_std)
 
 
 class TestCooccurrenceProbabilityProfile(unittest.TestCase):
