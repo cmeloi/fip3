@@ -274,6 +274,11 @@ class InterrelationProfile(object):
         """
         return self.select_raw_interrelations()['value'].mean()
 
+    def to_distance_matrix(self, selection=None):
+        if not selection:
+            selection = self.select_raw_interrelations()
+        raise NotImplementedError
+
     def to_csv(self, target_file):
         """Export the interrelation matrix to a CSV file
 
