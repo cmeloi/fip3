@@ -174,6 +174,27 @@ class TestCooccurrenceProfile(unittest.TestCase):
         self.assertEqual(p.attrs['imputation_value'],
                          (prior_imputation_value - interrelations_mean) / interrelations_std)
 
+    def test_select_major_self_relations(self):
+        p = CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES)
+        major_self_relations = p.select_major_self_relations(1.0)
+        self.assertEqual(len(major_self_relations), 1)
+        self.assertEqual(major_self_relations.at[('x', 'x'), 'value'], 1)
+        major_self_relations = p.select_major_self_relations(0.0)
+        for features, value in p.select_self_relations().iterrows():
+            major_value = major_self_relations.at[features, 'value']
+            self.assertEqual(major_value, value['value'])
+
+    def test_select_major_interrelations(self):
+        p = CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES)
+        major_interrelations = p.select_major_interrelations(1.0)
+        self.assertEqual(len(major_interrelations), 2)
+        self.assertEqual(major_interrelations.at[('a', 'b'), 'value'], 2)
+        self.assertEqual(major_interrelations.at[('c', 'd'), 'value'], 2)
+        major_interrelations = p.select_major_interrelations(0.0)
+        for features, value in p.select_raw_interrelations().iterrows():
+            major_value = major_interrelations.at[features, 'value']
+            self.assertEqual(major_value, value['value'])
+
 
 class TestCooccurrenceProbabilityProfile(unittest.TestCase):
     def test_cooccurrence_probability_calculation(self):

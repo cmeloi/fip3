@@ -1,4 +1,3 @@
-import numpy as np
 from collections import Counter
 from abc import ABCMeta, abstractmethod
 
@@ -100,7 +99,12 @@ class InterrelationProfile(object):
         :param zscore_cutoff: Relative relation strength cutoff value. Default 1.0
         :return: major feature self-relations as a Pandas DataFrame
         """
-        raise NotImplementedError
+        mean = self.mean_self_relation_value()
+        standard_deviation = self.standard_self_relation_deviation()
+        lower_cutoff = mean - zscore_cutoff*standard_deviation
+        higher_cutoff = mean + zscore_cutoff*standard_deviation
+        self_relations = self.select_self_relations()
+        return self_relations.loc[(self_relations['value'] <= lower_cutoff) | (self_relations['value'] >= higher_cutoff)]
 
     def select_major_interrelations(self, zscore_cutoff=1.0):
         """Provides all explicit feature interrelations within the profile, that are higher or lower than the profile
@@ -114,7 +118,12 @@ class InterrelationProfile(object):
         :param zscore_cutoff: Relative relation strength cutoff value. Default 1.0
         :return: major feature interrelations as a Pandas DataFrame
         """
-        raise NotImplementedError
+        mean = self.mean_interrelation_value()
+        standard_deviation = self.standard_interrelation_deviation()
+        lower_cutoff = mean - zscore_cutoff*standard_deviation
+        higher_cutoff = mean + zscore_cutoff*standard_deviation
+        self_relations = self.select_raw_interrelations()
+        return self_relations.loc[(self_relations['value'] <= lower_cutoff) | (self_relations['value'] >= higher_cutoff)]
 
     def self_relations_dict(self):
         """Returns self-relation values of all features in the profile as a dictionary.
