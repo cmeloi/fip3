@@ -1,9 +1,9 @@
-from collections import Counter
 from abc import ABCMeta, abstractmethod
-
-import pandas
-import numpy
+from collections import Counter
 from functools import partial
+
+import numpy
+import pandas
 
 
 class InterrelationProfile(object):
@@ -152,7 +152,7 @@ class InterrelationProfile(object):
         row_zscore_partial = partial(self.row_zscore, interrelations_mean, interrelations_standard_deviation)
         interrelations_z_scores = interrelations.apply(row_zscore_partial, axis=1)
         self.df.update(interrelations_z_scores, overwrite=True)
-        self.attrs['imputation_value'] = ((float(self.get_imputation_value()) - interrelations_mean)
+        self.attrs['imputation_value'] = ((float(self.get_imputation_value(None, None)) - interrelations_mean)
                                           / interrelations_standard_deviation)
 
     def interrelation_value(self, f1, f2=None):
@@ -314,7 +314,8 @@ class InterrelationProfile(object):
             selection = self.select_raw_interrelations()
         explicit_matrix = self.to_explicit_matrix(selection)
         if not distance_conversion_function:
-            distance_conversion_function = lambda x: 1 / (x + 1)
+            def distance_conversion_function(x):
+                return 1 / (x + 1)
         explicit_matrix = explicit_matrix.applymap(distance_conversion_function)
         if zero_self_relations:
             for feature in explicit_matrix.index.values:

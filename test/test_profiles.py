@@ -1,9 +1,8 @@
-import unittest
 import statistics
+import unittest
 
-import numpy
-from pandas import DataFrame
 import numpy as np
+from pandas import DataFrame
 
 from fip.profiles import *
 
@@ -45,9 +44,9 @@ class TestCooccurrenceProfile(unittest.TestCase):
         p_cooccurrence_counts.update({('y', 'y'): 1})
         q_cooccurrence_counts = dict(COOCCURRENCE_COUNTS)
         q_cooccurrence_counts.update({('z', 'z'): 2})
-        p = CooccurrenceProfile.from_dict(p_cooccurrence_counts, vector_count=4) +\
+        p = CooccurrenceProfile.from_dict(p_cooccurrence_counts, vector_count=4) + \
             CooccurrenceProfile.from_dict(q_cooccurrence_counts, vector_count=5)
-        r_cooccurrence_counts = {key: value*2 for key, value in COOCCURRENCE_COUNTS.items()}
+        r_cooccurrence_counts = {key: value * 2 for key, value in COOCCURRENCE_COUNTS.items()}
         r_cooccurrence_counts.update({('y', 'y'): 1, ('z', 'z'): 2})
         reference_profile = CooccurrenceProfile.from_dict(r_cooccurrence_counts, vector_count=9)
         self.assertEqual(p.attrs['vector_count'], reference_profile.attrs['vector_count'])
@@ -152,7 +151,7 @@ class TestCooccurrenceProfile(unittest.TestCase):
         feature_count = len(features)
         interrelation_max_count = (feature_count * feature_count - feature_count) / 2
         interrelation_values = [value for features, value in COOCCURRENCE_COUNTS.items() if features[0] != features[1]]
-        interrelation_values.extend([0 for i in range(int(interrelation_max_count - len(interrelation_values)))])
+        interrelation_values.extend([0 * i for i in range(int(interrelation_max_count - len(interrelation_values)))])
         interrelation_values_std = statistics.pstdev(interrelation_values)
         self.assertEqual(p.standard_interrelation_deviation(), interrelation_values_std)
 
@@ -161,12 +160,12 @@ class TestCooccurrenceProfile(unittest.TestCase):
         prior_imputation_value = p.attrs['imputation_value']
         self_relations_mean = p.mean_self_relation_value()
         self_relations_std = p.standard_self_relation_deviation()
-        zscores_self_relations = {features: (value - self_relations_mean)/self_relations_std
+        zscores_self_relations = {features: (value - self_relations_mean) / self_relations_std
                                   for features, value in COOCCURRENCE_COUNTS.items()
                                   if features[0] == features[1]}
         interrelations_mean = p.mean_interrelation_value()
         interrelations_std = p.standard_interrelation_deviation()
-        zscores_interrelations = {features: (value - interrelations_mean)/interrelations_std
+        zscores_interrelations = {features: (value - interrelations_mean) / interrelations_std
                                   for features, value in COOCCURRENCE_COUNTS.items()
                                   if features[0] != features[1]}
         p.convert_to_zscore()
@@ -210,7 +209,10 @@ class TestCooccurrenceProfile(unittest.TestCase):
 
     def test_to_distance_matrix(self):
         p = CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES)
-        cooccurrence_to_distance = lambda x: 1 / (x + 1)
+
+        def cooccurrence_to_distance(x):
+            return 1 / (x + 1)
+
         distance_matrix = p.to_distance_matrix(distance_conversion_function=cooccurrence_to_distance,
                                                zero_self_relations=False)
         features = p.distinct_features()
@@ -255,7 +257,7 @@ class TestCooccurrenceProbabilityProfile(unittest.TestCase):
         p = CooccurrenceProbabilityProfile.from_cooccurrence_profile(
             CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES))
         imputation_probability = 1.0 / (len(FEATURE_TUPLES) + 1)
-        interrelation_values = [value/len(FEATURE_TUPLES) for features, value in COOCCURRENCE_COUNTS.items()
+        interrelation_values = [value / len(FEATURE_TUPLES) for features, value in COOCCURRENCE_COUNTS.items()
                                 if features[0] != features[1]]
         interrelation_values_sum = sum(interrelation_values)
         features = set()
@@ -264,7 +266,7 @@ class TestCooccurrenceProbabilityProfile(unittest.TestCase):
         feature_count = len(features)
         interrelation_max_count = (feature_count * feature_count - feature_count) / 2
         num_imputed_values = interrelation_max_count - len(interrelation_values)
-        interrelation_values_sum += imputation_probability*num_imputed_values
+        interrelation_values_sum += imputation_probability * num_imputed_values
         mean_interrelation_value = float(interrelation_values_sum) / interrelation_max_count
         self.assertEqual(p.mean_interrelation_value(), mean_interrelation_value)
 
@@ -300,7 +302,7 @@ class TestPointwiseMutualInformationProfile(unittest.TestCase):
 class TestPointwiseKLDivergenceProfile(unittest.TestCase):
     def test_pointwise_kld_calculation(self):
         cpp1 = CooccurrenceProbabilityProfile.from_cooccurrence_profile(
-                CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES))
+            CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES))
         p = PointwiseKLDivergenceProfile.from_cooccurrence_probability_profiles(cpp1, cpp1)
         self.assertTrue((p.df['value'] == 0).all(), "KL divergence with itself should be 0")
         self.assertEqual(p.attrs['imputation_value'], 0, "KL divergence imputation for itself should be 0")
@@ -320,7 +322,7 @@ class TestPointwiseKLDivergenceProfile(unittest.TestCase):
 class TestPointwiseJeffreysDivergenceProfile(unittest.TestCase):
     def test_pointwise_jd_calculation(self):
         cpp1 = CooccurrenceProbabilityProfile.from_cooccurrence_profile(
-                CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES))
+            CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES))
         p = PointwiseJeffreysDivergenceProfile.from_cooccurrence_probability_profiles(cpp1, cpp1)
         self.assertTrue((p.df['value'] == 0).all(), "KL divergence with itself should be 0")
         self.assertEqual(p.attrs['imputation_value'], 0, "KL divergence imputation for itself should be 0")
