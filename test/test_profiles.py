@@ -78,6 +78,9 @@ class TestCooccurrenceProfile(unittest.TestCase):
         for feature_tuple in FEATURE_TUPLES:
             features.update(set(feature_tuple))
         self.assertSetEqual(p.distinct_features(), features)
+        selection = p.df.loc[p.df.index.get_level_values('feature1') != 'a']
+        features.remove('a')
+        self.assertSetEqual(p.distinct_features(selection), features)
 
     def test_feature_interrelations(self):
         p = CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES)
@@ -194,6 +197,38 @@ class TestCooccurrenceProfile(unittest.TestCase):
         for features, value in p.select_raw_interrelations().iterrows():
             major_value = major_interrelations.at[features, 'value']
             self.assertEqual(major_value, value['value'])
+
+    def test_to_explicit_matrix(self):
+        p = CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES)
+        explicit_matrix = p.to_explicit_matrix()
+        features = p.distinct_features()
+        for feature_a in features:
+            for feature_b in features:
+                cooccurrence = max((COOCCURRENCE_COUNTS.get((feature_a, feature_b), 0),
+                                    COOCCURRENCE_COUNTS.get((feature_b, feature_a), 0)))
+                self.assertEqual(explicit_matrix.at[feature_a, feature_b], cooccurrence)
+
+    def test_to_distance_matrix(self):
+        p = CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES)
+        cooccurrence_to_distance = lambda x: 1 / (x + 1)
+        distance_matrix = p.to_distance_matrix(distance_conversion_function=cooccurrence_to_distance,
+                                               zero_self_relations=False)
+        features = p.distinct_features()
+        for feature_a in features:
+            for feature_b in features:
+                cooccurrence = max((COOCCURRENCE_COUNTS.get((feature_a, feature_b), 0),
+                                    COOCCURRENCE_COUNTS.get((feature_b, feature_a), 0)))
+                distance = cooccurrence_to_distance(cooccurrence)
+                self.assertEqual(distance_matrix.at[feature_a, feature_b], distance)
+        selection = p.df.loc[p.df.index.get_level_values('feature1') != 'a']
+        distance_matrix = p.to_distance_matrix(selection,
+                                               distance_conversion_function=cooccurrence_to_distance,
+                                               zero_self_relations=True)
+        features.remove('a')
+        with self.assertRaises(KeyError):
+            self.assertEqual(distance_matrix.at['a', 'a'], 0)
+        for feature in features:
+            self.assertEqual(distance_matrix.at[feature, feature], 0)
 
 
 class TestCooccurrenceProbabilityProfile(unittest.TestCase):

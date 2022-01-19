@@ -101,10 +101,11 @@ class InterrelationProfile(object):
         """
         mean = self.mean_self_relation_value()
         standard_deviation = self.standard_self_relation_deviation()
-        lower_cutoff = mean - zscore_cutoff*standard_deviation
-        higher_cutoff = mean + zscore_cutoff*standard_deviation
+        lower_cutoff = mean - zscore_cutoff * standard_deviation
+        higher_cutoff = mean + zscore_cutoff * standard_deviation
         self_relations = self.select_self_relations()
-        return self_relations.loc[(self_relations['value'] <= lower_cutoff) | (self_relations['value'] >= higher_cutoff)]
+        return self_relations.loc[
+            (self_relations['value'] <= lower_cutoff) | (self_relations['value'] >= higher_cutoff)]
 
     def select_major_interrelations(self, zscore_cutoff=1.0):
         """Provides all explicit feature interrelations within the profile, that are higher or lower than the profile
@@ -120,10 +121,11 @@ class InterrelationProfile(object):
         """
         mean = self.mean_interrelation_value()
         standard_deviation = self.standard_interrelation_deviation()
-        lower_cutoff = mean - zscore_cutoff*standard_deviation
-        higher_cutoff = mean + zscore_cutoff*standard_deviation
+        lower_cutoff = mean - zscore_cutoff * standard_deviation
+        higher_cutoff = mean + zscore_cutoff * standard_deviation
         self_relations = self.select_raw_interrelations()
-        return self_relations.loc[(self_relations['value'] <= lower_cutoff) | (self_relations['value'] >= higher_cutoff)]
+        return self_relations.loc[
+            (self_relations['value'] <= lower_cutoff) | (self_relations['value'] >= higher_cutoff)]
 
     def self_relations_dict(self):
         """Returns self-relation values of all features in the profile as a dictionary.
@@ -183,12 +185,19 @@ class InterrelationProfile(object):
         for feature, other_feature in self.features2cooccurrences(features, omit_self_relations=omit_self_relations):
             yield self.interrelation_value(feature, other_feature)
 
-    def distinct_features(self):
+    def distinct_features(self, selection=None):
         """Provides a set of all distinct features present within the interrelation profile.
+        Optionally, can be provided a selection containing interrelation profile subset, to return distinct
+        features within that subset.
 
+        :param selection: a subset DataFrame for the interrelation profile, to narrow the scope. Optional, default None.
         :return: feature names as a set of strings
         """
-        return set(self.df.index.unique(level='feature1'))
+        if selection is None:
+            selection = self.df
+        features = set(selection.index.unique(level='feature1'))
+        features.update(set(selection.index.unique(level='feature2')))
+        return features
 
     def iterate_feature_interrelations(self):
         """Yields all interrelations values between features in the profile, in a tuple.
@@ -274,10 +283,43 @@ class InterrelationProfile(object):
         """
         return self.select_raw_interrelations()['value'].mean()
 
-    def to_distance_matrix(self, selection=None):
-        if not selection:
+    def to_explicit_matrix(self, selection=None):
+        """Transforms the interrelation profile, or its subset provided by the selection, into an explicit
+        square matrix of interrelation values. Without a specified selection, the entire interrelation profile
+        is converted.
+
+        :param selection: an optional subset to form the explicit matrix on. Default None.
+        :return: the explicit interrelation table as a DataFrame
+        """
+        if selection is None:
+            selection = self.select_all()
+        features = sorted(self.distinct_features(selection))
+        dataframe = pandas.DataFrame(index=features, columns=features)
+        for feature_a in features:
+            for feature_b in features:
+                dataframe.at[feature_a, feature_b] = self.interrelation_value(feature_a, feature_b)
+        return dataframe
+
+    def to_distance_matrix(self, selection=None, *, distance_conversion_function=None, zero_self_relations=True):
+        """Transforms the interrelation profile, or its subset provided by the selection, into an explicit
+        distance matrix based on interrelation values. Without a specified selection, the entire interrelation profile
+        is converted.
+
+        :param selection: an optional subset to form the explicit matrix on. Default None.
+        :param distance_conversion_function: f(x) to transform the interrelation value x into distance. Default 1/x+1.
+        :param zero_self_relations: turns distances of all features to themselves into explicit 0. Default True.
+        :return: the explicit interrelation table as a DataFrame
+        """
+        if selection is None:
             selection = self.select_raw_interrelations()
-        raise NotImplementedError
+        explicit_matrix = self.to_explicit_matrix(selection)
+        if not distance_conversion_function:
+            distance_conversion_function = lambda x: 1 / (x + 1)
+        explicit_matrix = explicit_matrix.applymap(distance_conversion_function)
+        if zero_self_relations:
+            for feature in explicit_matrix.index.values:
+                explicit_matrix.at[feature, feature] = 0
+        return explicit_matrix
 
     def to_csv(self, target_file):
         """Export the interrelation matrix to a CSV file
