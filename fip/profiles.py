@@ -32,6 +32,18 @@ class InterrelationProfile(object):
         df.set_index(['feature1', 'feature2'], inplace=True)
         return cls(df, *args, **kwargs)
 
+    @classmethod
+    def from_dataframe(cls, dataframe, *args, **kwargs):
+        """Loads an interrelation profile from a dataframe containing 'feature1', 'feature2' and 'value' columns.
+
+        :param dataframe: the dataframe to load
+        :param args: any further arguments to be passed to the InterrelationProfile init
+        :param kwargs: any further keyword arguments to be passed to the InterrelationProfile init
+        :return: the corresponding InterrelationProfile instance
+        """
+        dataframe.set_index(['feature1', 'feature2'], inplace=True)
+        return cls(dataframe, *args, **kwargs)
+
     @staticmethod
     def features2cooccurrences(features, *, omit_self_relations=False):
         """Processes an iterable of features into a set of feature co-occurrences.
