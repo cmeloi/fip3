@@ -11,7 +11,9 @@ class InterrelationProfile(object):
     Not meant for instantiation."""
     __metaclass__ = ABCMeta
 
-    def __init__(self, df, *, zscore=False, **kwargs):
+    def __init__(self, df, *, zscore=False, min_cutoff_value=None, **kwargs):
+        if min_cutoff_value:
+            df = df[df.value >= min_cutoff_value]
         self.df = df
         self.attrs = kwargs
         if zscore:
@@ -22,6 +24,8 @@ class InterrelationProfile(object):
         """Loads an interrelation profile from a dictionary of {(feature1, feature2): value}
 
         :param value_dict: the dictionary to load
+        :param zscore: whether to produce a z-scored profile instead of raw values. Keyword argument, default False.
+        :param min_cutoff_value: if defined, drop all interrelations with values below the given limit. Default None.
         :param args: any further arguments to be passed to the InterrelationProfile init
         :param kwargs: any further keyword arguments to be passed to the InterrelationProfile init
         :return: the corresponding InterrelationProfile instance
@@ -37,6 +41,8 @@ class InterrelationProfile(object):
         """Loads an interrelation profile from a dataframe containing 'feature1', 'feature2' and 'value' columns.
 
         :param dataframe: the dataframe to load
+        :param zscore: whether to produce a z-scored profile instead of raw values. Keyword argument, default False.
+        :param min_cutoff_value: if defined, drop all interrelations with values below the given limit. Default None.
         :param args: any further arguments to be passed to the InterrelationProfile init
         :param kwargs: any further keyword arguments to be passed to the InterrelationProfile init
         :return: the corresponding InterrelationProfile instance
@@ -131,13 +137,13 @@ class InterrelationProfile(object):
         :param zscore_cutoff: Relative relation strength cutoff value. Default 1.0
         :return: major feature interrelations as a Pandas DataFrame
         """
-        mean = self.mean_interrelation_value()
-        standard_deviation = self.standard_interrelation_deviation()
+        mean = self.mean_raw_interrelation_value()
+        standard_deviation = self.standard_raw_interrelation_deviation()
         lower_cutoff = mean - zscore_cutoff * standard_deviation
         higher_cutoff = mean + zscore_cutoff * standard_deviation
-        self_relations = self.select_raw_interrelations()
-        return self_relations.loc[
-            (self_relations['value'] <= lower_cutoff) | (self_relations['value'] >= higher_cutoff)]
+        interrelations = self.select_raw_interrelations()
+        return interrelations.loc[
+            (interrelations['value'] <= lower_cutoff) | (interrelations['value'] >= higher_cutoff)]
 
     def self_relations_dict(self):
         """Returns self-relation values of all features in the profile as a dictionary.
@@ -534,7 +540,7 @@ class PointwiseMutualInformationProfile(InterrelationProfile):
         :return: PointwiseMutualInformationProfile instance
         """
         kwargs['vector_count'] = cooccurrence_probability_profile.attrs['vector_count']
-        kwargs['imputation_probability'] = cooccurrence_probability_profile.attrs['imputation_probability']
+        kwargs['imputation_probability'] = cooccurrence_probability_profile.select_self_relations()['value'].min()
         imputable_standalone_probabilities = cooccurrence_probability_profile.imputable_standalone_probabilities()
         kwargs['imputation_standalone_probabilities'] = imputable_standalone_probabilities
         standalone_probabilities = cooccurrence_probability_profile.self_relations_dict()
@@ -545,7 +551,23 @@ class PointwiseMutualInformationProfile(InterrelationProfile):
         return cls(df, *args, **kwargs)
 
     def get_imputation_value(self, feature1, feature2):
-        """PMI imputation based on "most-optimistic" scenario that the co-occurrence would happen in the n+1 sample
+        """PMI imputation is based on the assumption that two of least occurring features within the set can be expected
+        to have no interrelation, i.e. their PMI value would be 0. For the more frequently occurring features, their
+        lack of co-occurrence is a correspondingly larger surprise, i.e. the imputed PMI values go into the negatives,
+        meaning that the feature co-occur less than what could be expected from their individual occurrence
+        probabilities, if they were independent. The computation of imputation PMI values (iPMI) for two feature
+        is therefore:
+
+        iPMI(base) = log2[(p_least_common_feature * p_least_common_feature)
+        / (p_least_common_feature * p_least_common_feature)] = log2[1] = 0
+
+        based on which:
+
+        iPMI(feature1, feature2) = log2[p_least_common_feature**2 / (p_feature1 * p_feature2)]
+
+        where p_least_common_feature is the stand-alone occurrence probability for the least common feature within
+        the profile, and p_feature1 and p_feature2 are the stand-alone occurrence probabilities for the features
+        which PMI is being imputed.
 
         :param feature1: First feature for PMI imputation
         :param feature2: Second feature for PMI imputation
@@ -557,7 +579,7 @@ class PointwiseMutualInformationProfile(InterrelationProfile):
         imputable_marginals = self.attrs['imputation_standalone_probabilities']
         feature1_imputation_probability = imputable_marginals.get(feature1, generic_imputation_probability)
         feature2_imputation_probability = imputable_marginals.get(feature2, generic_imputation_probability)
-        return numpy.log2(generic_imputation_probability
+        return numpy.log2(generic_imputation_probability**2
                           / (feature1_imputation_probability * feature2_imputation_probability))
 
     def mean_interrelation_value(self):
