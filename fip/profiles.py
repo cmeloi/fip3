@@ -150,7 +150,8 @@ class InterrelationProfile(object):
 
         :return: a dictionary of {feature: self_interrelation_value} pairs
         """
-        return {str(multiindex[0]): float(value) for multiindex, value in self.select_self_relations().iterrows()}
+        return {str(multiindex[0]): float(columns['value'])
+                for multiindex, columns in self.select_self_relations().iterrows()}
 
     def convert_to_zscore(self):
         """Converts the values within the InterrelationProfile into Z-scores, i.e. subtracts mean,
@@ -467,7 +468,8 @@ class CooccurrenceProbabilityProfile(InterrelationProfile):
         """
         if not vector_count:
             vector_count = cooccurrence_profile.attrs.get('vector_count', cooccurrence_profile.df['value'].max())
-        df = cooccurrence_profile.df.divide(vector_count)
+        df = cooccurrence_profile.df
+        df['value'] = df['value'].divide(vector_count)
         kwargs['vector_count'] = vector_count
         kwargs['imputation_probability'] = 1.0 / (vector_count + 1)  # "most-optimist" imputation value
         return cls(df, *args, **kwargs)
@@ -544,8 +546,9 @@ class PointwiseMutualInformationProfile(InterrelationProfile):
         imputable_standalone_probabilities = cooccurrence_probability_profile.imputable_standalone_probabilities()
         kwargs['imputation_standalone_probabilities'] = imputable_standalone_probabilities
         standalone_probabilities = cooccurrence_probability_profile.self_relations_dict()
+        # TODO: figure how to do this without affecting other optional columns
         df = cooccurrence_probability_profile.df.apply(
-            lambda x: numpy.log2(x / (standalone_probabilities[x.name[0]] * standalone_probabilities[x.name[1]]))
+            lambda x: numpy.log2(x.value / (standalone_probabilities[x.name[0]] * standalone_probabilities[x.name[1]]))
             if x.name[0] != x.name[1] else x * 0,
             axis=1)  # the if/else clause because P(A AND A) = P(A), not P(A)*P(A). And log2(P(A)/P(A)) = log2(1) = 0
         return cls(df, *args, **kwargs)
