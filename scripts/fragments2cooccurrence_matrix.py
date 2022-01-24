@@ -10,8 +10,7 @@ def line2features(line, delimiter_regex):
     features = re.split(delimiter_regex, line.strip())
     for feature in features:
         if feature:
-            feature.strip()
-            yield feature
+            yield feature.strip()
 
 
 def input2feature_lists(input_lines, delimiters):
