@@ -699,7 +699,7 @@ class PointwiseJeffreysDivergenceProfile(PointwiseKLDivergenceProfile):
         co-occurrence probabilities in the given interrelation profile match those in the given reference interrelation
         profile.
 
-        pJD(F1|F2) == pJD(F2|F1) = pKLD(F1|F2) + pKLD(F2|F1)
+        pJD(F1|F2) == pJD(F2|F1) = abs(pKLD(F1|F2)) + abs(pKLD(F2|F1))
 
         where F1 and F2 are observed features, pKLD(F1|F2) is their pointwise KL divergence.
 
@@ -718,6 +718,6 @@ class PointwiseJeffreysDivergenceProfile(PointwiseKLDivergenceProfile):
         main_values = df['value_main'].fillna(imputation_probability_main)
         reference_values = df['value_reference'].fillna(imputation_probability_ref)
         df = pandas.DataFrame(
-            data=numpy.log2(main_values / reference_values) + numpy.log2(reference_values / main_values),
+            data=abs(numpy.log2(main_values / reference_values)) + abs(numpy.log2(reference_values / main_values)),
             columns=['value'])
         return cls(df, *args, **kwargs)
