@@ -1,31 +1,33 @@
 #!/usr/bin/env python3
 import argparse
 import sys
-import re
+import csv
 
 from fip.profiles import CooccurrenceProfile
 
 
-def line2features(line, delimiter_regex):
-    features = re.split(delimiter_regex, line.strip())
-    for feature in features:
-        if feature:
-            yield feature.strip()
+def field2features(field, delimiter):
+    features = [feature.strip() for feature in field.split(delimiter) if feature]
+    return features
 
 
-def input2feature_lists(input_lines, delimiters):
-    delimiter_regex = re.compile('|'.join([delimiter.replace('|', '\|') for delimiter in delimiters]))
-    for line in input_lines:
-        line = line.strip()
-        if line:
-            yield line2features(line, delimiter_regex)
+def input2feature_lists(args):
+    column_numbers = args.column_numbers
+    delimiter = args.feature_delimiter
+    with args.input as inputfile:
+        reader = csv.reader(inputfile)
+        if args.skip_header:
+            next(reader)
+        for row in reader:
+            feature_set = set()
+            for column_index in column_numbers:
+                feature_set.update(field2features(row[column_index], delimiter))
+            yield feature_set
 
 
 def create_cooccurrence_matrix(args):
-    with args.output as out, args.input as inputfile:
-        if args.skip_header:
-            next(inputfile)
-        mx = CooccurrenceProfile.from_feature_lists(input2feature_lists(inputfile, args.feature_delimiters))
+    mx = CooccurrenceProfile.from_feature_lists(input2feature_lists(args))
+    with args.output as out:
         mx.to_csv(out)
 
 
@@ -35,8 +37,10 @@ def main():
                         help="Path to the input file. Default STDIN.")
     parser.add_argument('-o', '--output', nargs='?', type=argparse.FileType('w'), default=sys.stdout,
                         help="Path to the output file. Default STDOUT.")
-    parser.add_argument('-d', '--feature_delimiters', nargs='+', type=str, default=[' '],
-                        help="Delimiters between the processed feature strings, to split on. Default space.")
+    parser.add_argument('-c', '--column_numbers', nargs='+', type=int, default=[0],
+                        help="Column numbers within csv to process. Default 0, i.e. only the first one.")
+    parser.add_argument('-d', '--feature_delimiter', nargs='?', type=str, default=' ',
+                        help="Delimiter between the processed feature strings, to split on. Default space.")
     parser.add_argument('-s', '--skip_header', nargs='?', type=bool, default=False,
                         help="Skip the first line of the input (usually a header). Default false.")
     args = parser.parse_args()
