@@ -82,20 +82,49 @@ class InterrelationProfile(object):
         row[output_column_name] = (row[input_column_name] - mean) / standard_deviation
         return row
 
-    def select_self_relations(self):
+    def select_self_relations(self, selection=None):
         """Provides all feature self-relations within the profile as a DataFrame subset selection.
 
+        :type selection: the subset to select the self-relations from. Default None, i.e. using the whole dataframe.
         :return: feature self-relations as a Pandas DataFrame subset
         """
-        return self.df.loc[self.df.index.get_level_values('feature1') == self.df.index.get_level_values('feature2')]
+        if selection is None:
+            selection = self.df
+        return selection.loc[selection.index.get_level_values('feature1')
+                             == selection.index.get_level_values('feature2')]
 
-    def select_raw_interrelations(self):
+    def select_raw_interrelations(self, selection=None):
         """Provides all explicit (i.e. not imputed) feature interrelations (i.e. not self-relations) within the profile
         as a DataFrame subset selection.
 
+        :type selection: the subset to select raw interrelations from. Default None, i.e. using the whole dataframe.
         :return: feature interrelations as a Pandas DataFrame subset
         """
-        return self.df.loc[self.df.index.get_level_values('feature1') != self.df.index.get_level_values('feature2')]
+        if selection is None:
+            selection = self.df
+        return selection.loc[selection.index.get_level_values('feature1')
+                             != selection.index.get_level_values('feature2')]
+
+    def select_raw_interrelations_involving(self, features, depth=0):
+        """Selects all raw interrelations associated with the given feature or group of features, either directly
+        (depth = 0) or by extension through other relations (depth of 1, 2, ...)
+
+        :param features: feature or a list of features to gain features from
+        :param depth: how far the interrelations are tracked. Default 0, i.e. only direct interrelations.
+        :return: the associated interrelations as a Pandas DataFrame subset
+        """
+        if isinstance(features, str):
+            features = [features]
+        features = set(features)
+        seek_depth = depth
+        while seek_depth > 0:
+            seek_depth = seek_depth - 1
+            selection = pandas.concat((self.df[self.df.index.get_level_values('feature1').isin(features)],
+                                       self.df[self.df.index.get_level_values('feature2').isin(features)]))
+            features.update(self.distinct_features(selection))
+        selection = pandas.concat((self.df[self.df.index.get_level_values('feature1').isin(features)],
+                                   self.df[self.df.index.get_level_values('feature2').isin(features)]))
+        return self.select_raw_interrelations(selection[~selection.index.duplicated(keep='first')])
 
     def select_all(self):
         """Provides all explicit feature relations (both self-relations and interrelations) within the profile

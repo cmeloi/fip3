@@ -330,12 +330,12 @@ class TestPointwiseJeffreysDivergenceProfile(unittest.TestCase):
             cpp1,
             CooccurrenceProbabilityProfile.from_cooccurrence_profile(
                 CooccurrenceProfile.from_feature_lists([('a', 'b')])))
-        self.assertEqual(p.interrelation_value('a', 'b'), np.log2(2.0 / 3.0) + np.log2(3.0 / 2.0))
+        self.assertEqual(p.interrelation_value('a', 'b'), abs(np.log2(2.0 / 3.0)) + abs(np.log2(3.0 / 2.0)))
         p = PointwiseJeffreysDivergenceProfile.from_cooccurrence_probability_profiles(
             CooccurrenceProbabilityProfile.from_cooccurrence_profile(
                 CooccurrenceProfile.from_feature_lists([('a', 'b')])),
             cpp1)
-        self.assertEqual(p.interrelation_value('a', 'b'), np.log2(2.0 / 3.0) + np.log2(3.0 / 2.0))
+        self.assertEqual(p.interrelation_value('a', 'b'), abs(np.log2(2.0 / 3.0)) + abs(np.log2(3.0 / 2.0)))
         self.assertEqual(cpp1.num_raw_interrelations(), p.num_raw_interrelations())
         self.assertEqual(cpp1.num_max_interrelations(), p.num_max_interrelations())
 
