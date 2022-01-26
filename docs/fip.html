@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>fip package &mdash; fip3  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> fip3
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">fip package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-fip.chem">fip.chem module</a></li>
+<li><a class="reference internal" href="#module-fip.profiles">fip.profiles module</a></li>
+<li><a class="reference internal" href="#module-fip">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">fip3</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>fip package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/fip.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="fip-package">
+<h1>fip package<a class="headerlink" href="#fip-package" title="Permalink to this headline"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline"></a></h2>
+</section>
+<section id="module-fip.chem">
+<span id="fip-chem-module"></span><h2>fip.chem module<a class="headerlink" href="#module-fip.chem" title="Permalink to this headline"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="fip.chem.rdmol2brics_blocs_smiles">
+<span class="sig-prename descclassname"><span class="pre">fip.chem.</span></span><span class="sig-name descname"><span class="pre">rdmol2brics_blocs_smiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_fragment_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.chem.rdmol2brics_blocs_smiles" title="Permalink to this definition"></a></dt>
+<dd><p>Decomposes the provided rdmol instance into BRICS fragment SMILES, as designed by Degen et al. in
+On the Art of Compiling and Using ‘Drug-Like’ Chemical Fragment Spaces, <a class="reference external" href="https://doi.org/10.1002/cmdc.200800178">https://doi.org/10.1002/cmdc.200800178</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> – the source RDKit Mol instance</p></li>
+<li><p><strong>min_fragment_size</strong> – passed to the minFragmentSize of the RDKit implementation</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>SMILES of the BRICS fragments</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fip.chem.rdmol2morgan_feature_smiles">
+<span class="sig-prename descclassname"><span class="pre">fip.chem.</span></span><span class="sig-name descname"><span class="pre">rdmol2morgan_feature_smiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_bonds_explicit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">canonical_smiles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">isomeric_smiles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_H_explicit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.chem.rdmol2morgan_feature_smiles" title="Permalink to this definition"></a></dt>
+<dd><p>Breaks a molecule, given as an RDKit Mol instance, into a set of ECFP-like fragments with selected radius, and returns them in SMILES notation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> – the molecule for fragmenting, as RDKit Mol</p></li>
+<li><p><strong>radius</strong> – EC fragment radius</p></li>
+<li><p><strong>min_radius</strong> – minimal fragment radius to consider, default 0. Can be set to ignore lower-scope fragments.</p></li>
+<li><p><strong>all_bonds_explicit</strong> – boolean indicating whether all bond orders will be explicitly stated in the output. Default False.</p></li>
+<li><p><strong>canonical_smiles</strong> – boolean indicating whether the fragment should be attempted to make canonical. Default True.</p></li>
+<li><p><strong>isomeric_smiles</strong> – boolean indicating whether to include stereo information in the fragments. Default False.</p></li>
+<li><p><strong>all_H_explicit</strong> – boolean indicating whether to explicitly include all hydrogen atoms. Default True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a set of SMILES strings</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fip.chem.rdmol2smiles">
+<span class="sig-prename descclassname"><span class="pre">fip.chem.</span></span><span class="sig-name descname"><span class="pre">rdmol2smiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.chem.rdmol2smiles" title="Permalink to this definition"></a></dt>
+<dd><p>Simple conversion of RDKit Mol instance into a SMILES string.
+Wrapped in case some standardization/postprocessing needed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>mol</strong> – RDKit Mol instance</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>SMILES string</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fip.chem.rdmol_bonds2fragment_smiles">
+<span class="sig-prename descclassname"><span class="pre">fip.chem.</span></span><span class="sig-name descname"><span class="pre">rdmol_bonds2fragment_smiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bonds</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_bonds_explicit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">canonical_smiles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">isomeric_smiles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_H_explicit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.chem.rdmol_bonds2fragment_smiles" title="Permalink to this definition"></a></dt>
+<dd><p>Generates a fragment in SMILES notation from a molecule given as an RDKit Mol instance,
+based on the provided bond IDs within the molecule.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> – the molecule containing the fragment, as RDKit Mol</p></li>
+<li><p><strong>bonds</strong> – a set of bonds that are part of the fragment</p></li>
+<li><p><strong>all_bonds_explicit</strong> – boolean indicating whether all bond orders will be explicitly stated in the output. Default False.</p></li>
+<li><p><strong>canonical_smiles</strong> – boolean indicating whether the fragment should be attempted to make canonical. Default True.</p></li>
+<li><p><strong>isomeric_smiles</strong> – boolean indicating whether to include stereo information in the fragments. Default False.</p></li>
+<li><p><strong>all_H_explicit</strong> – boolean indicating whether to explicitly include all hydrogen atoms. Default False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a SMILES string of the fragment, None if there are no atoms matched</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fip.chem.rdmol_has_substructure_pattern">
+<span class="sig-prename descclassname"><span class="pre">fip.chem.</span></span><span class="sig-name descname"><span class="pre">rdmol_has_substructure_pattern</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rdmol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.chem.rdmol_has_substructure_pattern" title="Permalink to this definition"></a></dt>
+<dd><p>Direct wrap of RDKit HasSubstructMatch.
+Wrapped in case some standardization/postprocessing needed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rdmol</strong> – RDKit Mol instance to search the pattern in</p></li>
+<li><p><strong>pattern</strong> – the pattern to search, also in RDKit Mol form</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>bool or None (in case of RDKit Mol instance error)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fip.chem.rdmol_locations2fragments_smiles">
+<span class="sig-prename descclassname"><span class="pre">fip.chem.</span></span><span class="sig-name descname"><span class="pre">rdmol_locations2fragments_smiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fragment_locations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_bonds_explicit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">canonical_smiles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">isomeric_smiles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_H_explicit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.chem.rdmol_locations2fragments_smiles" title="Permalink to this definition"></a></dt>
+<dd><p>Generates a set of fragments in SMILES notation from a molecule given as an RDKit Mol instance,
+based on provided atom indices and radii.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> – the molecule for fragmenting, as RDKit Mol</p></li>
+<li><p><strong>fragment_locations</strong> – an iterable of fragment locations, in (atom, radius) tuples</p></li>
+<li><p><strong>min_radius</strong> – minimal feature radius to consider, default 0. Can be set to ignore lower-scope features.</p></li>
+<li><p><strong>all_bonds_explicit</strong> – boolean indicating whether all bond orders will be explicitly stated in the output. Default False.</p></li>
+<li><p><strong>canonical_smiles</strong> – boolean indicating whether the fragment should be attempted to make canonical. Default True.</p></li>
+<li><p><strong>isomeric_smiles</strong> – boolean indicating whether to include stereo information in the fragments. Default False.</p></li>
+<li><p><strong>all_H_explicit</strong> – boolean indicating whether to explicitly include all hydrogen atoms. Default True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a set of SMILES strings</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fip.chem.sdf2rdmols">
+<span class="sig-prename descclassname"><span class="pre">fip.chem.</span></span><span class="sig-name descname"><span class="pre">sdf2rdmols</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sdf_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.chem.sdf2rdmols" title="Permalink to this definition"></a></dt>
+<dd><p>Converts an SDF file to RDKit Mol instances.
+Wrap of RDKit SDMolSupplier, modified to omit RDKit Mol instances that can’t be parsed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>sdf_path</strong> – Path to the SDF file</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a generator yielding RDKit Mol instances</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fip.chem.smarts2rdmol">
+<span class="sig-prename descclassname"><span class="pre">fip.chem.</span></span><span class="sig-name descname"><span class="pre">smarts2rdmol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smarts</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.chem.smarts2rdmol" title="Permalink to this definition"></a></dt>
+<dd><p>Simple conversion of SMARTS string into a RDKit Mol instance.
+Wrapped in case some standardization/postprocessing needed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>smarts</strong> – SMARTS string</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>RDKit Mol instance</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fip.chem.smiles2rdmol">
+<span class="sig-prename descclassname"><span class="pre">fip.chem.</span></span><span class="sig-name descname"><span class="pre">smiles2rdmol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smiles</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.chem.smiles2rdmol" title="Permalink to this definition"></a></dt>
+<dd><p>Simple conversion of SMILES string into a RDKit Mol instance.
+Wrapped in case some standardization/postprocessing needed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>smiles</strong> – SMILES string</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>RDKit Mol instance</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fip.chem.standardize_mol">
+<span class="sig-prename descclassname"><span class="pre">fip.chem.</span></span><span class="sig-name descname"><span class="pre">standardize_mol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_hydrogens</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_stereo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.chem.standardize_mol" title="Permalink to this definition"></a></dt>
+<dd><p>Simple structure standardization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> – RDKit Mol instance to standardize</p></li>
+<li><p><strong>remove_hydrogens</strong> – whether to remove all hydrogens using RDKit RemoveAllHs</p></li>
+<li><p><strong>remove_stereo</strong> – whether to remove stereo information using RDKIt RemoveStereochemistry</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>standardized RDKit Mol instance</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-fip.profiles">
+<span id="fip-profiles-module"></span><h2>fip.profiles module<a class="headerlink" href="#module-fip.profiles" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="fip.profiles.CooccurrenceProbabilityProfile">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">fip.profiles.</span></span><span class="sig-name descname"><span class="pre">CooccurrenceProbabilityProfile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zscore</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_cutoff_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.CooccurrenceProbabilityProfile" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fip.profiles.InterrelationProfile" title="fip.profiles.InterrelationProfile"><code class="xref py py-class docutils literal notranslate"><span class="pre">fip.profiles.InterrelationProfile</span></code></a></p>
+<p>A co-occurrence probability profile, holding information about the observed probabilities for feature pair
+co-occurrences within the characterized set.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.CooccurrenceProbabilityProfile.from_cooccurrence_profile">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">from_cooccurrence_profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cooccurrence_profile</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vector_count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.CooccurrenceProbabilityProfile.from_cooccurrence_profile" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a Cooccurrence Probability Profile from the provided Cooccurrence Profile.
+To calculate probability, overall count of feature vector is needed.
+The count is either explicitly provided through the vector_count kwarg, or inferred from
+the cooccurrence_profile.attrs[‘vector_count’] or, failing that, as a max of its ‘count’ column</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cooccurrence_profile</strong> – the source CooccurrenceProfile instance</p></li>
+<li><p><strong>args</strong> – any further arguments to be passed to the InterrelationProfile init</p></li>
+<li><p><strong>vector_count</strong> – explicit count of feature vectors, i.e. samples, to manually adjust the probabilities</p></li>
+<li><p><strong>kwargs</strong> – any further keyword arguments to be passed to the InterrelationProfile init</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a CooccurrenceProbabilityProfile instance</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.CooccurrenceProbabilityProfile.get_imputation_value">
+<span class="sig-name descname"><span class="pre">get_imputation_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.CooccurrenceProbabilityProfile.get_imputation_value" title="Permalink to this definition"></a></dt>
+<dd><p>Interrelation probability imputation based on “most-optimistic” scenario that the
+co-occurrence would happen in the n+1 sample.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the imputation value as a float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.CooccurrenceProbabilityProfile.imputable_standalone_probabilities">
+<span class="sig-name descname"><span class="pre">imputable_standalone_probabilities</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.CooccurrenceProbabilityProfile.imputable_standalone_probabilities" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates standalone probabilities for individual features, to be used in the “most-optimistic” imputation
+scheme, i.e. presuming that the n+1 feature vector will contain all observed features co-occurring.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a dictionary of feature:probability</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.CooccurrenceProbabilityProfile.mean_interrelation_value">
+<span class="sig-name descname"><span class="pre">mean_interrelation_value</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.CooccurrenceProbabilityProfile.mean_interrelation_value" title="Permalink to this definition"></a></dt>
+<dd><p>Provides mean value of all interrelation values within the profile, including imputed values.
+Ignores self-relations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the mean interrelation value as a float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.CooccurrenceProbabilityProfile.standard_interrelation_deviation">
+<span class="sig-name descname"><span class="pre">standard_interrelation_deviation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.CooccurrenceProbabilityProfile.standard_interrelation_deviation" title="Permalink to this definition"></a></dt>
+<dd><p>Provides standard deviation for all interrelation values within the profile, including imputed values.
+Ignores self-relations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the standard deviation value of interrelations as a float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="fip.profiles.CooccurrenceProfile">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">fip.profiles.</span></span><span class="sig-name descname"><span class="pre">CooccurrenceProfile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zscore</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_cutoff_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.CooccurrenceProfile" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fip.profiles.InterrelationProfile" title="fip.profiles.InterrelationProfile"><code class="xref py py-class docutils literal notranslate"><span class="pre">fip.profiles.InterrelationProfile</span></code></a></p>
+<p>A feature Co-occurrence profile, which is usually a core profile for further interrelation analysis.
+Holds raw counts on how many times did the features occur and co-occur within the characterized set.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.CooccurrenceProfile.from_feature_lists">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">from_feature_lists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature_lists</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.CooccurrenceProfile.from_feature_lists" title="Permalink to this definition"></a></dt>
+<dd><p>Generate a Co-occurrence profile from an iterable of feature lists.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>feature_lists</strong> – the iterable of feature lists to derive the CooccurrenceProfile from</p></li>
+<li><p><strong>args</strong> – any further arguments to be passed to the CooccurrenceProfile init</p></li>
+<li><p><strong>kwargs</strong> – any further keyword arguments to be passed to the CooccurrenceProfile init</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the corresponding CooccurrenceProfile instance</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.CooccurrenceProfile.from_feature_lists_split_on_feature">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">from_feature_lists_split_on_feature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iterable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.CooccurrenceProfile.from_feature_lists_split_on_feature" title="Permalink to this definition"></a></dt>
+<dd><p>Generates and returns two CooccurrenceProbabilityProfile instances from the provided iterable,
+and the provided feature. Returns main profile from feature vectors containing the given feature,
+and a reference profile from all other feature vectors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>iterable</strong> – the iterable of feature lists to derive the CooccurrenceProfile from</p></li>
+<li><p><strong>feature</strong> – the feature to split the set on</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a tuple of the CooccurrenceProfile instances (with_feature, without_feature)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.CooccurrenceProfile.get_imputation_value">
+<span class="sig-name descname"><span class="pre">get_imputation_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.CooccurrenceProfile.get_imputation_value" title="Permalink to this definition"></a></dt>
+<dd><p>Returns interrelation imputation value. For co-occurrences, this is flat 0, unless z-scored.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>imputation value</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.CooccurrenceProfile.mean_interrelation_value">
+<span class="sig-name descname"><span class="pre">mean_interrelation_value</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.CooccurrenceProfile.mean_interrelation_value" title="Permalink to this definition"></a></dt>
+<dd><p>Provides mean value of all interrelation values within the profile, including imputed values.
+Ignores self-relations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the mean interrelation value as a float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.CooccurrenceProfile.standard_interrelation_deviation">
+<span class="sig-name descname"><span class="pre">standard_interrelation_deviation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.CooccurrenceProfile.standard_interrelation_deviation" title="Permalink to this definition"></a></dt>
+<dd><p>Provides standard deviation for all interrelation values within the profile, including imputed values.
+Ignores self-relations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the standard deviation value of interrelations as a float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="fip.profiles.InterrelationProfile">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">fip.profiles.</span></span><span class="sig-name descname"><span class="pre">InterrelationProfile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zscore</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_cutoff_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.InterrelationProfile" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A generic parent class representing an interrelation profile, and implementing their common functionality.
+Not meant for instantiation.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.InterrelationProfile.convert_to_zscore">
+<span class="sig-name descname"><span class="pre">convert_to_zscore</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.InterrelationProfile.convert_to_zscore" title="Permalink to this definition"></a></dt>
+<dd><p>Converts the values within the InterrelationProfile into Z-scores, i.e. subtracts mean,
+divides by standard deviation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None, the InterrelationProfile is changed itself</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.InterrelationProfile.distinct_features">
+<span class="sig-name descname"><span class="pre">distinct_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">selection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.InterrelationProfile.distinct_features" title="Permalink to this definition"></a></dt>
+<dd><p>Provides a set of all distinct features present within the interrelation profile.
+Optionally, can be provided a selection containing interrelation profile subset, to return distinct
+features within that subset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>selection</strong> – a subset DataFrame for the interrelation profile, to narrow the scope. Optional, default None.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>feature names as a set of strings</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.InterrelationProfile.features2cooccurrences">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">features2cooccurrences</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">features</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">omit_self_relations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.InterrelationProfile.features2cooccurrences" title="Permalink to this definition"></a></dt>
+<dd><p>Processes an iterable of features into a set of feature co-occurrences.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>features</strong> – an iterable of features to process, e.g. (feature1, feature2, feature4, …)</p></li>
+<li><p><strong>omit_self_relations</strong> – Whether to ignore feature self-relations, i.e. (f1, f1). Default False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a co-occurrence generator</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.InterrelationProfile.features_interrelation_values">
+<span class="sig-name descname"><span class="pre">features_interrelation_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">features</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">omit_self_relations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.InterrelationProfile.features_interrelation_values" title="Permalink to this definition"></a></dt>
+<dd><p>Yields interrelation values within the profile for all features within a given feature list.
+Includes imputed values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>features</strong> – features to look up within the profile</p></li>
+<li><p><strong>omit_self_relations</strong> – whether to omit self-relations in the lookup, default False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a generator yielding the interrelation values, usually floats or ints</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.InterrelationProfile.from_dataframe">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">from_dataframe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataframe</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.InterrelationProfile.from_dataframe" title="Permalink to this definition"></a></dt>
+<dd><p>Loads an interrelation profile from a dataframe containing ‘feature1’, ‘feature2’ and ‘value’ columns.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataframe</strong> – the dataframe to load</p></li>
+<li><p><strong>zscore</strong> – whether to produce a z-scored profile instead of raw values. Keyword argument, default False.</p></li>
+<li><p><strong>min_cutoff_value</strong> – if defined, drop all interrelations with values below the given limit. Default None.</p></li>
+<li><p><strong>args</strong> – any further arguments to be passed to the InterrelationProfile init</p></li>
+<li><p><strong>kwargs</strong> – any further keyword arguments to be passed to the InterrelationProfile init</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the corresponding InterrelationProfile instance</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.InterrelationProfile.from_dict">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">from_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value_dict</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.InterrelationProfile.from_dict" title="Permalink to this definition"></a></dt>
+<dd><p>Loads an interrelation profile from a dictionary of {(feature1, feature2): value}</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value_dict</strong> – the dictionary to load</p></li>
+<li><p><strong>zscore</strong> – whether to produce a z-scored profile instead of raw values. Keyword argument, default False.</p></li>
+<li><p><strong>min_cutoff_value</strong> – if defined, drop all interrelations with values below the given limit. Default None.</p></li>
+<li><p><strong>args</strong> – any further arguments to be passed to the InterrelationProfile init</p></li>
+<li><p><strong>kwargs</strong> – any further keyword arguments to be passed to the InterrelationProfile init</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the corresponding InterrelationProfile instance</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.InterrelationProfile.get_imputation_value">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">get_imputation_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.InterrelationProfile.get_imputation_value" title="Permalink to this definition"></a></dt>
+<dd><p>Provides the imputation value for feature pair that does not occur within the interrelation profile.
+Implemented individually within different FeatureInterrelation types, due to imputation differences.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.InterrelationProfile.interrelation_value">
+<span class="sig-name descname"><span class="pre">interrelation_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.InterrelationProfile.interrelation_value" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the interrelation value for the feature pair provided in the arguments.
+If second argument f2 is not filled in, returns self-relation (f1, f1).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>f1</strong> – the first feature</p></li>
+<li><p><strong>f2</strong> – the second feature, default None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The interrelation value between the two features within the profile. Usually int or float.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.InterrelationProfile.iterate_feature_interrelations">
+<span class="sig-name descname"><span class="pre">iterate_feature_interrelations</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.InterrelationProfile.iterate_feature_interrelations" title="Permalink to this definition"></a></dt>
+<dd><p>Yields all interrelations values between features in the profile, in a tuple.
+Omits self-relations of features.
+Includes imputed values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>yields tuples of (feature1, feature2, interrelation_value)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.InterrelationProfile.mean_interrelation_value">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">mean_interrelation_value</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.InterrelationProfile.mean_interrelation_value" title="Permalink to this definition"></a></dt>
+<dd><p>Provides mean value of all interrelation values within the profile, including imputed values.
+Implemented individually within different FeatureInterrelation types, due to imputation differences.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.InterrelationProfile.mean_raw_interrelation_value">
+<span class="sig-name descname"><span class="pre">mean_raw_interrelation_value</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.InterrelationProfile.mean_raw_interrelation_value" title="Permalink to this definition"></a></dt>
+<dd><p>Provides mean value of all explicit interrelation values within the profile, i.e. not counting in
+the imputation values.
+Ignores self-relations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the mean explicit interrelation value as a float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.InterrelationProfile.mean_self_relation_value">
+<span class="sig-name descname"><span class="pre">mean_self_relation_value</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.InterrelationProfile.mean_self_relation_value" title="Permalink to this definition"></a></dt>
+<dd><p>Provides mean value of all self-relation values within the profile.
+Ignores interrelations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the mean explicit interrelation value as a float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.InterrelationProfile.num_features">
+<span class="sig-name descname"><span class="pre">num_features</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.InterrelationProfile.num_features" title="Permalink to this definition"></a></dt>
+<dd><p>Provides the count of all features (individual features, not their interrelations)
+that occur within the profile.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>count of all features</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.InterrelationProfile.num_max_interrelations">
+<span class="sig-name descname"><span class="pre">num_max_interrelations</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.InterrelationProfile.num_max_interrelations" title="Permalink to this definition"></a></dt>
+<dd><p>Provides the count of all possible feature interrelations that can exist within the profile,
+based solely on the amount of observed features.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>count of all possible interrelations</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.InterrelationProfile.num_raw_interrelations">
+<span class="sig-name descname"><span class="pre">num_raw_interrelations</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.InterrelationProfile.num_raw_interrelations" title="Permalink to this definition"></a></dt>
+<dd><p>Provides the count of all interrelations that explicitly occur within the profile, i.e. all interrelations
+that are non-imputed, non-self-relations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>count of all explicit interrelation values</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.InterrelationProfile.row_zscore">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">row_zscore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mean</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">standard_deviation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_column_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'value'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_column_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'value'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.InterrelationProfile.row_zscore" title="Permalink to this definition"></a></dt>
+<dd><p>A drop-in static method to calculate Z-score from a value, mean and standard deviation.
+Z-score, aka. standard score, is the number of standard deviations a given value is from the mean.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mean</strong> – the mean value within the distribution</p></li>
+<li><p><strong>standard_deviation</strong> – the standard deviation within the distribution</p></li>
+<li><p><strong>row</strong> – a Pandas row to calculate the z score for</p></li>
+<li><p><strong>input_column_name</strong> – column name for the processed value, default ‘value’</p></li>
+<li><p><strong>output_column_name</strong> – column name for the output z-score value, default ‘value’ (i.e. overwrite)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>modified row containing the z-score</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.InterrelationProfile.select_all">
+<span class="sig-name descname"><span class="pre">select_all</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.InterrelationProfile.select_all" title="Permalink to this definition"></a></dt>
+<dd><p>Provides all explicit feature relations (both self-relations and interrelations) within the profile
+as a DataFrame. The DataFrame itself is also directly accessible through InterrelationProfile.df</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>all feature relations as a Pandas DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.InterrelationProfile.select_major_interrelations">
+<span class="sig-name descname"><span class="pre">select_major_interrelations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">zscore_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.InterrelationProfile.select_major_interrelations" title="Permalink to this definition"></a></dt>
+<dd><p>Provides all explicit feature interrelations within the profile, that are higher or lower than the profile
+average by amount of standard deviations provided by the zscore_cutoff value.
+In other words, the zcore_cutoff is the relative relation strength cutoff based on the amount of standard
+deviations for the individual interrelation values from their mean.</p>
+<p>Returns a selection of the DataFrame. The DataFrame itself is also directly accessible through
+InterrelationProfile.df</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>zscore_cutoff</strong> – Relative relation strength cutoff value. Default 1.0</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>major feature interrelations as a Pandas DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.InterrelationProfile.select_major_self_relations">
+<span class="sig-name descname"><span class="pre">select_major_self_relations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">zscore_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.InterrelationProfile.select_major_self_relations" title="Permalink to this definition"></a></dt>
+<dd><p>Provides all explicit feature self relations within the profile, that are higher or lower than the profile
+average by amount of standard deviations provided by the zscore_cutoff value.
+In other words, the zcore_cutoff is the relative relation strength cutoff based on the amount of standard
+deviations for the individual interrelation values from their mean.</p>
+<p>Returns a selection of the DataFrame. The DataFrame itself is also directly accessible through
+InterrelationProfile.df</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>zscore_cutoff</strong> – Relative relation strength cutoff value. Default 1.0</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>major feature self-relations as a Pandas DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.InterrelationProfile.select_raw_interrelations">
+<span class="sig-name descname"><span class="pre">select_raw_interrelations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">selection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.InterrelationProfile.select_raw_interrelations" title="Permalink to this definition"></a></dt>
+<dd><p>Provides all explicit (i.e. not imputed) feature interrelations (i.e. not self-relations) within the profile
+as a DataFrame subset selection.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>feature interrelations as a Pandas DataFrame subset</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.InterrelationProfile.select_raw_interrelations_involving">
+<span class="sig-name descname"><span class="pre">select_raw_interrelations_involving</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.InterrelationProfile.select_raw_interrelations_involving" title="Permalink to this definition"></a></dt>
+<dd><p>Selects all raw interrelations associated with the given feature or group of features, either directly
+(depth = 0) or by extension through other relations (depth of 1, 2, …)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>features</strong> – feature or a list of features to gain features from</p></li>
+<li><p><strong>depth</strong> – how far the interrelations are tracked. Default 0, i.e. only direct interrelations.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the associated interrelations as a Pandas DataFrame subset</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.InterrelationProfile.select_self_relations">
+<span class="sig-name descname"><span class="pre">select_self_relations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">selection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.InterrelationProfile.select_self_relations" title="Permalink to this definition"></a></dt>
+<dd><p>Provides all feature self-relations within the profile as a DataFrame subset selection.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>feature self-relations as a Pandas DataFrame subset</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.InterrelationProfile.self_relations_dict">
+<span class="sig-name descname"><span class="pre">self_relations_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.InterrelationProfile.self_relations_dict" title="Permalink to this definition"></a></dt>
+<dd><p>Returns self-relation values of all features in the profile as a dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a dictionary of {feature: self_interrelation_value} pairs</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.InterrelationProfile.standard_interrelation_deviation">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">standard_interrelation_deviation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.InterrelationProfile.standard_interrelation_deviation" title="Permalink to this definition"></a></dt>
+<dd><p>Provides standard deviation for all interrelation values within the profile, including imputed values.
+Implemented individually within different FeatureInterrelation types, due to imputation differences.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.InterrelationProfile.standard_raw_interrelation_deviation">
+<span class="sig-name descname"><span class="pre">standard_raw_interrelation_deviation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.InterrelationProfile.standard_raw_interrelation_deviation" title="Permalink to this definition"></a></dt>
+<dd><p>Provides standard deviation from all explicit (i.e. non-imputed) interrelation values within the profile.
+Ignores self-relations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The standard deviation as a float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.InterrelationProfile.standard_self_relation_deviation">
+<span class="sig-name descname"><span class="pre">standard_self_relation_deviation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.InterrelationProfile.standard_self_relation_deviation" title="Permalink to this definition"></a></dt>
+<dd><p>Provides standard deviation from all self-relation values within the profile.
+Ignores interrelations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The standard deviation as a float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.InterrelationProfile.to_csv">
+<span class="sig-name descname"><span class="pre">to_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_file</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.InterrelationProfile.to_csv" title="Permalink to this definition"></a></dt>
+<dd><p>Export the interrelation matrix to a CSV file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>target_file</strong> – the path to the export</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.InterrelationProfile.to_distance_matrix">
+<span class="sig-name descname"><span class="pre">to_distance_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">selection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_conversion_function</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zero_self_relations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.InterrelationProfile.to_distance_matrix" title="Permalink to this definition"></a></dt>
+<dd><p>Transforms the interrelation profile, or its subset provided by the selection, into an explicit
+distance matrix based on interrelation values. Without a specified selection, the entire interrelation profile
+is converted.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>selection</strong> – an optional subset to form the explicit matrix on. Default None.</p></li>
+<li><p><strong>distance_conversion_function</strong> – f(x) to transform the interrelation value x into distance. Default 1/x+1.</p></li>
+<li><p><strong>zero_self_relations</strong> – turns distances of all features to themselves into explicit 0. Default True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the explicit interrelation table as a DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.InterrelationProfile.to_explicit_matrix">
+<span class="sig-name descname"><span class="pre">to_explicit_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">selection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.InterrelationProfile.to_explicit_matrix" title="Permalink to this definition"></a></dt>
+<dd><p>Transforms the interrelation profile, or its subset provided by the selection, into an explicit
+square matrix of interrelation values. Without a specified selection, the entire interrelation profile
+is converted.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>selection</strong> – an optional subset to form the explicit matrix on. Default None.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the explicit interrelation table as a DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="fip.profiles.PointwiseJeffreysDivergenceProfile">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">fip.profiles.</span></span><span class="sig-name descname"><span class="pre">PointwiseJeffreysDivergenceProfile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zscore</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_cutoff_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.PointwiseJeffreysDivergenceProfile" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fip.profiles.PointwiseKLDivergenceProfile" title="fip.profiles.PointwiseKLDivergenceProfile"><code class="xref py py-class docutils literal notranslate"><span class="pre">fip.profiles.PointwiseKLDivergenceProfile</span></code></a></p>
+<p>An interrelation profile consisting of pointwise Jeffreys divergence values, a measure of statistical
+distances for each feature pair, between its observed co-occurrence in the characterized set and its observed
+co-occurrence in a reference set - and vice versa.
+A symmetric variant of the KL divergence.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.PointwiseJeffreysDivergenceProfile.from_cooccurrence_probability_profiles">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">from_cooccurrence_probability_profiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cooccurrence_probability_profile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference_probability_profile</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.PointwiseJeffreysDivergenceProfile.from_cooccurrence_probability_profiles" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a pointwise Jeffreys divergence interrelation profile quantifying how well do the
+co-occurrence probabilities in the given interrelation profile match those in the given reference interrelation
+profile.</p>
+<p>pJD(F1|F2) == pJD(F2|F1) = abs(pKLD(F1|F2)) + abs(pKLD(F2|F1))</p>
+<p>where F1 and F2 are observed features, pKLD(F1|F2) is their pointwise KL divergence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cooccurrence_probability_profile</strong> – first CooccurrenceProbabilityProfile instance</p></li>
+<li><p><strong>reference_probability_profile</strong> – second CooccurrenceProbabilityProfile instance</p></li>
+<li><p><strong>args</strong> – any further arguments to be passed to the InterrelationProfile init</p></li>
+<li><p><strong>kwargs</strong> – any further keyword arguments to be passed to the InterrelationProfile init</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>PointwiseJeffreysDivergenceProfile instance</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="fip.profiles.PointwiseKLDivergenceProfile">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">fip.profiles.</span></span><span class="sig-name descname"><span class="pre">PointwiseKLDivergenceProfile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zscore</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_cutoff_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.PointwiseKLDivergenceProfile" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fip.profiles.InterrelationProfile" title="fip.profiles.InterrelationProfile"><code class="xref py py-class docutils literal notranslate"><span class="pre">fip.profiles.InterrelationProfile</span></code></a></p>
+<p>An interrelation profile consisting of pointwise Kullback–Leibler divergence values, a measure of statistical
+distances for each feature pair, between its observed co-occurrence in the characterized set and its observed
+co-occurrence in a reference set.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.PointwiseKLDivergenceProfile.from_cooccurrence_probability_profiles">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">from_cooccurrence_probability_profiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cooccurrence_probability_profile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference_probability_profile</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.PointwiseKLDivergenceProfile.from_cooccurrence_probability_profiles" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a pointwise KL Divergence interrelation profile quantifying how well do the co-occurrence
+probabilities in the given interrelation profile match those in the given reference interrelation profile.</p>
+<p>pKLD(F1|F2) = log2( P(F1|F2) / Q(F1|F2) )</p>
+<p>where F1 and F2 are observed features, P(F1|F2) is their co-occurrence probability within the evaluated
+interrelation profile, and Q(F1|F2) is the same within the reference interrelation profile.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cooccurrence_probability_profile</strong> – the CooccurrenceProbabilityProfile instance to be evaluated</p></li>
+<li><p><strong>reference_probability_profile</strong> – the CooccurrenceProbabilityProfile instance to serve as a reference</p></li>
+<li><p><strong>args</strong> – any further arguments to be passed to the InterrelationProfile init</p></li>
+<li><p><strong>kwargs</strong> – any further keyword arguments to be passed to the InterrelationProfile init</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>PointwiseKLDivergenceProfile instance</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.PointwiseKLDivergenceProfile.get_imputation_value">
+<span class="sig-name descname"><span class="pre">get_imputation_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.PointwiseKLDivergenceProfile.get_imputation_value" title="Permalink to this definition"></a></dt>
+<dd><p>Pointwise KL imputation for the case that the features do not co-occur in neither the evaluated, nor the
+reference interrelation profile. It is based on the imputation probability for the individual feature profiles.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Imputation pointwise KLD for feature co-occurrence appearing in neither profile</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.PointwiseKLDivergenceProfile.mean_interrelation_value">
+<span class="sig-name descname"><span class="pre">mean_interrelation_value</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.PointwiseKLDivergenceProfile.mean_interrelation_value" title="Permalink to this definition"></a></dt>
+<dd><p>Provides mean value of all interrelation values within the profile, including imputed values.
+Ignores self-relations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the mean interrelation value as a float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.PointwiseKLDivergenceProfile.standard_interrelation_deviation">
+<span class="sig-name descname"><span class="pre">standard_interrelation_deviation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.PointwiseKLDivergenceProfile.standard_interrelation_deviation" title="Permalink to this definition"></a></dt>
+<dd><p>Provides standard deviation for all interrelation values within the profile, including imputed values.
+Ignores self-relations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the standard deviation value of interrelations as a float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="fip.profiles.PointwiseMutualInformationProfile">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">fip.profiles.</span></span><span class="sig-name descname"><span class="pre">PointwiseMutualInformationProfile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zscore</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_cutoff_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.PointwiseMutualInformationProfile" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fip.profiles.InterrelationProfile" title="fip.profiles.InterrelationProfile"><code class="xref py py-class docutils literal notranslate"><span class="pre">fip.profiles.InterrelationProfile</span></code></a></p>
+<p>An interrelation profile consisting of Pointwise Mutual Information (PMI) values observed between the features
+present in the characterized set. PMI is a measure of association between two features - a ratio between the
+observed co-occurrence probability of the feature pair, versus the projected co-occurrence if the features
+were completely independent, based on their individual occurrence rate.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.PointwiseMutualInformationProfile.from_cooccurrence_probability_profile">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">from_cooccurrence_probability_profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cooccurrence_probability_profile</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.PointwiseMutualInformationProfile.from_cooccurrence_probability_profile" title="Permalink to this definition"></a></dt>
+<dd><p>Generate a PMI interrelation profile.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cooccurrence_probability_profile</strong> – the source CooccurrenceProbabilityProfile instance</p></li>
+<li><p><strong>args</strong> – any further arguments to be passed to the InterrelationProfile init</p></li>
+<li><p><strong>kwargs</strong> – any further keyword arguments to be passed to the InterrelationProfile init</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>PointwiseMutualInformationProfile instance</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.PointwiseMutualInformationProfile.get_imputation_value">
+<span class="sig-name descname"><span class="pre">get_imputation_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.PointwiseMutualInformationProfile.get_imputation_value" title="Permalink to this definition"></a></dt>
+<dd><p>PMI imputation is based on the assumption that two of least occurring features within the set can be expected
+to have no interrelation, i.e. their PMI value would be 0. For the more frequently occurring features, their
+lack of co-occurrence is a correspondingly larger surprise, i.e. the imputed PMI values go into the negatives,
+meaning that the feature co-occur less than what could be expected from their individual occurrence
+probabilities, if they were independent. The computation of imputation PMI values (iPMI) for two feature
+is therefore:</p>
+<p>iPMI(base) = log2[(p_least_common_feature * p_least_common_feature)
+/ (p_least_common_feature * p_least_common_feature)] = log2[1] = 0</p>
+<p>based on which:</p>
+<p>iPMI(feature1, feature2) = log2[p_least_common_feature**2 / (p_feature1 * p_feature2)]</p>
+<p>where p_least_common_feature is the stand-alone occurrence probability for the least common feature within
+the profile, and p_feature1 and p_feature2 are the stand-alone occurrence probabilities for the features
+which PMI is being imputed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>feature1</strong> – First feature for PMI imputation</p></li>
+<li><p><strong>feature2</strong> – Second feature for PMI imputation</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The pair PMI based on imputed values</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.PointwiseMutualInformationProfile.mean_interrelation_value">
+<span class="sig-name descname"><span class="pre">mean_interrelation_value</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.PointwiseMutualInformationProfile.mean_interrelation_value" title="Permalink to this definition"></a></dt>
+<dd><p>Provides mean value of all PMI values within the profile, including imputed values.
+Ignores self-relations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the mean PMI value as a float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.PointwiseMutualInformationProfile.standard_interrelation_deviation">
+<span class="sig-name descname"><span class="pre">standard_interrelation_deviation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.PointwiseMutualInformationProfile.standard_interrelation_deviation" title="Permalink to this definition"></a></dt>
+<dd><p>Provides standard deviation for all interrelation values within the profile, including imputed values.
+Ignores self-relations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the standard deviation value of interrelations as a float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-fip">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-fip" title="Permalink to this headline"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, cmeloi.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
