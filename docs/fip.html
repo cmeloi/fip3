@@ -346,6 +346,21 @@ Ignores self-relations.</p>
 <p>A feature Co-occurrence profile, which is usually a core profile for further interrelation analysis.
 Holds raw counts on how many times did the features occur and co-occur within the characterized set.</p>
 <dl class="py method">
+<dt class="sig sig-object py" id="fip.profiles.CooccurrenceProfile.add_another_cooccurrence_profile">
+<span class="sig-name descname"><span class="pre">add_another_cooccurrence_profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.CooccurrenceProfile.add_another_cooccurrence_profile" title="Permalink to this definition"></a></dt>
+<dd><p>Adds the contents of another co-occurrence profile to this one, in full outer join fashion.
+The addition is done inplace, i.e. on this instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>other</strong> – another CooccurrenceProfile instance</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>self</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="fip.profiles.CooccurrenceProfile.from_feature_lists">
 <em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">from_feature_lists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature_lists</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fip.profiles.CooccurrenceProfile.from_feature_lists" title="Permalink to this definition"></a></dt>
 <dd><p>Generate a Co-occurrence profile from an iterable of feature lists.</p>
