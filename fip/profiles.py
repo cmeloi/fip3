@@ -474,11 +474,22 @@ class CooccurrenceProfile(InterrelationProfile):
                                         / max_interrelations)
         return float(standard_deviation)
 
-    def __add__(self, other):
+    def add_another_cooccurrence_profile(self, other):
+        """Adds the contents of another co-occurrence profile to this one, in full outer join fashion.
+        The addition is done inplace, i.e. on this instance.
+
+        :param other: another CooccurrenceProfile instance
+        :return: self
+        """
+        if not isinstance(other, CooccurrenceProfile):
+            raise ValueError(f"Only other CooccurrenceProfile instance can be added to this one, not {type(other)}")
         self.df = self.df.add(other.df, fill_value=0)
         self.df['value'] = self.df['value'].astype(int)
         self.attrs['vector_count'] += other.attrs['vector_count']
         return self
+
+    def __add__(self, other):
+        return self.add_another_cooccurrence_profile(other)
 
 
 class CooccurrenceProbabilityProfile(InterrelationProfile):

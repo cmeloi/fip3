@@ -53,6 +53,8 @@ class TestCooccurrenceProfile(unittest.TestCase):
         p.df.sort_index(inplace=True)
         reference_profile.df.sort_index(inplace=True)
         self.assertTrue(p.df.equals(reference_profile.df))
+        with self.assertRaises(ValueError):
+            reference_profile = reference_profile + 'stuff'
 
     def test_generate_profile_pair_for_feature(self):
         positive_profile, negative_profile = CooccurrenceProfile.from_feature_lists_split_on_feature(
