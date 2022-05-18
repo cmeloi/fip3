@@ -21,7 +21,8 @@ class InterrelationProfile(object):
 
     @classmethod
     def from_dict(cls, value_dict, *args, **kwargs):
-        """Loads an interrelation profile from a dictionary of {(feature1, feature2): value}
+        """Loads an interrelation profile from a dictionary of {(feature1, feature2): value}.
+        feature1, feature2 are handled as strings and serve as a multiindex for the value.
 
         :param value_dict: the dictionary to load
         :param zscore: whether to produce a z-scored profile instead of raw values. Keyword argument, default False.
@@ -30,7 +31,7 @@ class InterrelationProfile(object):
         :param kwargs: any further keyword arguments to be passed to the InterrelationProfile init
         :return: the corresponding InterrelationProfile instance
         """
-        df = pandas.DataFrame(((features[0], features[1], value)
+        df = pandas.DataFrame(((str(features[0]), str(features[1]), value)
                                for features, value in value_dict.items()),
                               columns=['feature1', 'feature2', 'value'])
         df.set_index(['feature1', 'feature2'], inplace=True)
@@ -47,18 +48,20 @@ class InterrelationProfile(object):
         :param kwargs: any further keyword arguments to be passed to the InterrelationProfile init
         :return: the corresponding InterrelationProfile instance
         """
+        dataframe.feature1.apply(str)
+        dataframe.feature2.apply(str)
         dataframe.set_index(['feature1', 'feature2'], inplace=True)
         return cls(dataframe, *args, **kwargs)
 
     @staticmethod
     def features2cooccurrences(features, *, omit_self_relations=False):
-        """Processes an iterable of features into a set of feature co-occurrences.
+        """Processes an iterable of features into a string set of feature co-occurrences.
 
         :param features: an iterable of features to process, e.g. (feature1, feature2, feature4, ...)
         :param omit_self_relations: Whether to ignore feature self-relations, i.e. (f1, f1). Default False.
         :return: a co-occurrence generator
         """
-        features = list(set(features))  # get rid of duplicates
+        features = list(set((str(f) for f in features)))  # force strings, get rid of duplicates
         features.sort()
         offset = 0
         if omit_self_relations:
@@ -497,20 +500,22 @@ class CooccurrenceProbabilityProfile(InterrelationProfile):
         """
         if not vector_count:
             vector_count = cooccurrence_profile.attrs.get('vector_count', cooccurrence_profile.df['value'].max())
-        df = cooccurrence_profile.df
+        df = cooccurrence_profile.df.copy(deep=True)
         df['value'] = df['value'].divide(vector_count)
         kwargs['vector_count'] = vector_count
         kwargs['imputation_probability'] = 1.0 / (vector_count + 1)  # "most-optimist" imputation value
         return cls(df, *args, **kwargs)
 
-    def imputable_standalone_probabilities(self):
+    def imputable_standalone_probabilities(self, *args, vector_count=None):
         """Calculates standalone probabilities for individual features, to be used in the "most-optimistic" imputation
         scheme, i.e. presuming that the n+1 feature vector will contain all observed features co-occurring.
 
+        :param vector_count: explicit count of feature vectors, i.e. samples, to optionally manually adjust the probabilities
         :return: a dictionary of feature:probability
         """
         standalone_probabilities = self.self_relations_dict()
-        vector_count = self.attrs['vector_count']
+        if not vector_count:
+            vector_count = self.attrs['vector_count']
         feature2imputable_standalone_probability = {
             feature: (feature_probability * vector_count + 1) / (vector_count + 1)
             for feature, feature_probability in standalone_probabilities.items()}
@@ -570,9 +575,16 @@ class PointwiseMutualInformationProfile(InterrelationProfile):
         :param kwargs: any further keyword arguments to be passed to the InterrelationProfile init
         :return: PointwiseMutualInformationProfile instance
         """
-        kwargs['vector_count'] = cooccurrence_probability_profile.attrs['vector_count']
+        if not kwargs.get('vector_count', None):
+            vector_count = cooccurrence_probability_profile.attrs['vector_count']
+            if not vector_count:
+                raise ValueError("If 'vector_count' attribute is not present in the used co-occurrence probability attrs,"
+                                 "please either set the co-occurrence probability profile attrs['vector_count'],"
+                                 "or add vector_count as a keyword argument to this function")
+            kwargs['vector_count'] = vector_count
         kwargs['imputation_probability'] = cooccurrence_probability_profile.select_self_relations()['value'].min()
-        imputable_standalone_probabilities = cooccurrence_probability_profile.imputable_standalone_probabilities()
+        imputable_standalone_probabilities = cooccurrence_probability_profile.imputable_standalone_probabilities(
+            vector_count=kwargs['vector_count'])
         kwargs['imputation_standalone_probabilities'] = imputable_standalone_probabilities
         standalone_probabilities = cooccurrence_probability_profile.self_relations_dict()
         # TODO: figure how to do this without affecting other optional columns

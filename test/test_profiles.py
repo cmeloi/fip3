@@ -232,6 +232,12 @@ class TestCooccurrenceProfile(unittest.TestCase):
         for feature in features:
             self.assertEqual(distance_matrix.at[feature, feature], 0)
 
+    def test_force_string_features(self):
+        extended_features = ((1, 2), (2, 3))
+        p = CooccurrenceProfile.from_feature_lists(extended_features)
+        for f in p.distinct_features():
+            self.assertIsInstance(f, str)
+
 
 class TestCooccurrenceProbabilityProfile(unittest.TestCase):
     def test_cooccurrence_probability_calculation(self):
@@ -286,6 +292,11 @@ class TestCooccurrenceProbabilityProfile(unittest.TestCase):
         interrelation_values_std = statistics.pstdev(interrelation_values)
         self.assertEqual(p.standard_interrelation_deviation(), interrelation_values_std)
 
+    def test_profile_dataframe_separation(self):
+        p = CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES)
+        q = CooccurrenceProbabilityProfile.from_cooccurrence_profile(p)
+        self.assertFalse(p.df is q.df, "The dataframe must not be the same instance, thus affecting previous profile")
+
 
 class TestPointwiseMutualInformationProfile(unittest.TestCase):
     def test_pmi_calculation(self):
@@ -297,6 +308,21 @@ class TestPointwiseMutualInformationProfile(unittest.TestCase):
                 CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES)))
         p.df.sort_index(inplace=True)
         self.assertTrue(p.df.equals(reference_profile.df))
+
+    def test_profile_dataframe_separation(self):
+        p = CooccurrenceProbabilityProfile.from_cooccurrence_profile(
+            CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES))
+        q = PointwiseMutualInformationProfile.from_cooccurrence_probability_profile(p)
+        self.assertFalse(p.df is q.df, "The dataframe must not be the same instance, thus affecting previous profile")
+
+    def test_pmi_vector_count_requirement(self):
+        p = CooccurrenceProbabilityProfile.from_cooccurrence_profile(
+            CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES))
+        p.attrs['vector_count'] = None  # destroy the default vector_count data
+        with self.assertRaises(ValueError):
+            PointwiseMutualInformationProfile.from_cooccurrence_probability_profile(p)
+        q = PointwiseMutualInformationProfile.from_cooccurrence_probability_profile(p, vector_count=100)
+        self.assertIsInstance(q, PointwiseMutualInformationProfile)
 
 
 class TestPointwiseKLDivergenceProfile(unittest.TestCase):
