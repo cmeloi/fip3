@@ -236,6 +236,18 @@ class InterrelationProfile(object):
         for feature, other_feature in self.features2cooccurrences(features, omit_self_relations=omit_self_relations):
             yield self.interrelation_value(feature, other_feature)
 
+    def mean_feature_interrelation_value(self, features, *, omit_self_relations=True):
+        """Returns the mean interrelation value within the profile for all features within a given feature list.
+        Corresponds to feature "tightness" measure for profiles such as (Z)PMI and (Z)PKLD.
+        Includes imputed values.
+
+        :param features: features to look up within the profile
+        :param omit_self_relations: whether to omit self-relations in the lookup, default True.
+        :return: mean interrelation value, as a float
+        """
+        hit_interrelation_values = self.features_interrelation_values(features, omit_self_relations=omit_self_relations)
+        return numpy.mean(list(hit_interrelation_values))
+
     def distinct_features(self, selection=None):
         """Provides a set of all distinct features present within the interrelation profile.
         Optionally, can be provided a selection containing interrelation profile subset, to return distinct
@@ -373,11 +385,11 @@ class InterrelationProfile(object):
                 explicit_matrix.at[feature, feature] = 0
         return explicit_matrix
 
-    def to_csv(self, target_file):
+    def to_csv(self, target_file=None):
         """Export the interrelation matrix to a CSV file
 
-        :param target_file: the path to the export
-        :return: None
+        :param target_file: the path or buffer to the export. Default None
+        :return: None or string
         """
         return self.df.to_csv(target_file)
 
@@ -665,6 +677,16 @@ class PointwiseMutualInformationProfile(InterrelationProfile):
         standard_deviation = numpy.sqrt((sum_raw_squared_differences / count_interrelations))
         return float(standard_deviation)
 
+    def relative_feature_tightness(self, features):
+        """Provides relative feature tightness (RFT) measure for a given set of features.
+        RFT quantifies how well do the feature co-occurrence combination in the provided feature vector match
+        the interrelations within this reference (Z)PMI profile.
+
+        :param features: an iterable of features
+        :return: Feature tightness value as a float
+        """
+        return self.mean_feature_interrelation_value(features, omit_self_relations=True)
+
 
 class PointwiseKLDivergenceProfile(InterrelationProfile):
     """An interrelation profile consisting of pointwise Kullback–Leibler divergence values, a measure of statistical
@@ -698,6 +720,18 @@ class PointwiseKLDivergenceProfile(InterrelationProfile):
                                               / df['value_reference'].fillna(imputation_probability_ref)),
                               columns=['value'])
         return cls(df, *args, **kwargs)
+
+    def relative_feature_divergence(self, features):
+        """Provides relative feature divergence, i.e. relative feature tightness (RFT) measure for a given set of
+        features, against this pointwise KL divergence profile between two interrelation profiles.
+        The value quantifies how much does the feature co-occurrence combination in the provided feature vector match
+        the interrelations prevalent in the source profile (positive values) compared to those more prevalent
+        in the reference profile (negative values).
+
+        :param features: an iterable of features
+        :return: Feature divergence value as a float
+        """
+        return self.mean_feature_interrelation_value(features, omit_self_relations=True)
 
     def get_imputation_value(self, *args):
         """Pointwise KL imputation for the case that the features do not co-occur in neither the evaluated, nor the
