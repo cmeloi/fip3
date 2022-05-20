@@ -21,7 +21,8 @@ class InterrelationProfile(object):
 
     @classmethod
     def from_dict(cls, value_dict, *args, **kwargs):
-        """Loads an interrelation profile from a dictionary of {(feature1, feature2): value}
+        """Loads an interrelation profile from a dictionary of {(feature1, feature2): value}.
+        feature1, feature2 are handled as strings and serve as a multiindex for the value.
 
         :param value_dict: the dictionary to load
         :param zscore: whether to produce a z-scored profile instead of raw values. Keyword argument, default False.
@@ -30,7 +31,7 @@ class InterrelationProfile(object):
         :param kwargs: any further keyword arguments to be passed to the InterrelationProfile init
         :return: the corresponding InterrelationProfile instance
         """
-        df = pandas.DataFrame(((features[0], features[1], value)
+        df = pandas.DataFrame(((str(features[0]), str(features[1]), value)
                                for features, value in value_dict.items()),
                               columns=['feature1', 'feature2', 'value'])
         df.set_index(['feature1', 'feature2'], inplace=True)
@@ -47,18 +48,20 @@ class InterrelationProfile(object):
         :param kwargs: any further keyword arguments to be passed to the InterrelationProfile init
         :return: the corresponding InterrelationProfile instance
         """
+        dataframe.feature1.apply(str)
+        dataframe.feature2.apply(str)
         dataframe.set_index(['feature1', 'feature2'], inplace=True)
         return cls(dataframe, *args, **kwargs)
 
     @staticmethod
     def features2cooccurrences(features, *, omit_self_relations=False):
-        """Processes an iterable of features into a set of feature co-occurrences.
+        """Processes an iterable of features into a string set of feature co-occurrences.
 
         :param features: an iterable of features to process, e.g. (feature1, feature2, feature4, ...)
         :param omit_self_relations: Whether to ignore feature self-relations, i.e. (f1, f1). Default False.
         :return: a co-occurrence generator
         """
-        features = list(set(features))  # get rid of duplicates
+        features = list(set((str(f) for f in features)))  # force strings, get rid of duplicates
         features.sort()
         offset = 0
         if omit_self_relations:
@@ -233,6 +236,18 @@ class InterrelationProfile(object):
         for feature, other_feature in self.features2cooccurrences(features, omit_self_relations=omit_self_relations):
             yield self.interrelation_value(feature, other_feature)
 
+    def mean_feature_interrelation_value(self, features, *, omit_self_relations=True):
+        """Returns the mean interrelation value within the profile for all features within a given feature list.
+        Corresponds to feature "tightness" measure for profiles such as (Z)PMI and (Z)PKLD.
+        Includes imputed values.
+
+        :param features: features to look up within the profile
+        :param omit_self_relations: whether to omit self-relations in the lookup, default True.
+        :return: mean interrelation value, as a float
+        """
+        hit_interrelation_values = self.features_interrelation_values(features, omit_self_relations=omit_self_relations)
+        return numpy.mean(list(hit_interrelation_values))
+
     def distinct_features(self, selection=None):
         """Provides a set of all distinct features present within the interrelation profile.
         Optionally, can be provided a selection containing interrelation profile subset, to return distinct
@@ -370,11 +385,11 @@ class InterrelationProfile(object):
                 explicit_matrix.at[feature, feature] = 0
         return explicit_matrix
 
-    def to_csv(self, target_file):
+    def to_csv(self, target_file=None):
         """Export the interrelation matrix to a CSV file
 
-        :param target_file: the path to the export
-        :return: None
+        :param target_file: the path or buffer to the export. Default None
+        :return: None or string
         """
         return self.df.to_csv(target_file)
 
@@ -508,20 +523,22 @@ class CooccurrenceProbabilityProfile(InterrelationProfile):
         """
         if not vector_count:
             vector_count = cooccurrence_profile.attrs.get('vector_count', cooccurrence_profile.df['value'].max())
-        df = cooccurrence_profile.df
+        df = cooccurrence_profile.df.copy(deep=True)
         df['value'] = df['value'].divide(vector_count)
         kwargs['vector_count'] = vector_count
         kwargs['imputation_probability'] = 1.0 / (vector_count + 1)  # "most-optimist" imputation value
         return cls(df, *args, **kwargs)
 
-    def imputable_standalone_probabilities(self):
+    def imputable_standalone_probabilities(self, *args, vector_count=None):
         """Calculates standalone probabilities for individual features, to be used in the "most-optimistic" imputation
         scheme, i.e. presuming that the n+1 feature vector will contain all observed features co-occurring.
 
+        :param vector_count: explicit count of feature vectors, i.e. samples, to optionally manually adjust the probabilities
         :return: a dictionary of feature:probability
         """
         standalone_probabilities = self.self_relations_dict()
-        vector_count = self.attrs['vector_count']
+        if not vector_count:
+            vector_count = self.attrs['vector_count']
         feature2imputable_standalone_probability = {
             feature: (feature_probability * vector_count + 1) / (vector_count + 1)
             for feature, feature_probability in standalone_probabilities.items()}
@@ -581,9 +598,16 @@ class PointwiseMutualInformationProfile(InterrelationProfile):
         :param kwargs: any further keyword arguments to be passed to the InterrelationProfile init
         :return: PointwiseMutualInformationProfile instance
         """
-        kwargs['vector_count'] = cooccurrence_probability_profile.attrs['vector_count']
+        if not kwargs.get('vector_count', None):
+            vector_count = cooccurrence_probability_profile.attrs['vector_count']
+            if not vector_count:
+                raise ValueError("If 'vector_count' attribute is not present in the used co-occurrence probability attrs,"
+                                 "please either set the co-occurrence probability profile attrs['vector_count'],"
+                                 "or add vector_count as a keyword argument to this function")
+            kwargs['vector_count'] = vector_count
         kwargs['imputation_probability'] = cooccurrence_probability_profile.select_self_relations()['value'].min()
-        imputable_standalone_probabilities = cooccurrence_probability_profile.imputable_standalone_probabilities()
+        imputable_standalone_probabilities = cooccurrence_probability_profile.imputable_standalone_probabilities(
+            vector_count=kwargs['vector_count'])
         kwargs['imputation_standalone_probabilities'] = imputable_standalone_probabilities
         standalone_probabilities = cooccurrence_probability_profile.self_relations_dict()
         # TODO: figure how to do this without affecting other optional columns
@@ -653,6 +677,16 @@ class PointwiseMutualInformationProfile(InterrelationProfile):
         standard_deviation = numpy.sqrt((sum_raw_squared_differences / count_interrelations))
         return float(standard_deviation)
 
+    def relative_feature_tightness(self, features):
+        """Provides relative feature tightness (RFT) measure for a given set of features.
+        RFT quantifies how well do the feature co-occurrence combination in the provided feature vector match
+        the interrelations within this reference (Z)PMI profile.
+
+        :param features: an iterable of features
+        :return: Feature tightness value as a float
+        """
+        return self.mean_feature_interrelation_value(features, omit_self_relations=True)
+
 
 class PointwiseKLDivergenceProfile(InterrelationProfile):
     """An interrelation profile consisting of pointwise Kullback–Leibler divergence values, a measure of statistical
@@ -686,6 +720,18 @@ class PointwiseKLDivergenceProfile(InterrelationProfile):
                                               / df['value_reference'].fillna(imputation_probability_ref)),
                               columns=['value'])
         return cls(df, *args, **kwargs)
+
+    def relative_feature_divergence(self, features):
+        """Provides relative feature divergence, i.e. relative feature tightness (RFT) measure for a given set of
+        features, against this pointwise KL divergence profile between two interrelation profiles.
+        The value quantifies how much does the feature co-occurrence combination in the provided feature vector match
+        the interrelations prevalent in the source profile (positive values) compared to those more prevalent
+        in the reference profile (negative values).
+
+        :param features: an iterable of features
+        :return: Feature divergence value as a float
+        """
+        return self.mean_feature_interrelation_value(features, omit_self_relations=True)
 
     def get_imputation_value(self, *args):
         """Pointwise KL imputation for the case that the features do not co-occur in neither the evaluated, nor the

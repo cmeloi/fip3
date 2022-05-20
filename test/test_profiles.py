@@ -1,7 +1,10 @@
 import statistics
 import unittest
+from io import StringIO
 
+import numpy
 import numpy as np
+import pandas
 from pandas import DataFrame
 
 from fip.profiles import *
@@ -234,6 +237,21 @@ class TestCooccurrenceProfile(unittest.TestCase):
         for feature in features:
             self.assertEqual(distance_matrix.at[feature, feature], 0)
 
+    def test_force_string_features(self):
+        extended_features = ((1, 2), (2, 3))
+        p = CooccurrenceProfile.from_feature_lists(extended_features)
+        for f in p.distinct_features():
+            self.assertIsInstance(f, str)
+
+    def test_to_csv(self):
+        p = CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES)
+        csv_buffer = StringIO()
+        p.to_csv(csv_buffer)
+        csv_buffer.seek(0)  # revert to the beginning
+        df = pandas.read_csv(csv_buffer)
+        q = CooccurrenceProfile.from_dataframe(df)
+        self.assertTrue(p.df.equals(q.df))
+
 
 class TestCooccurrenceProbabilityProfile(unittest.TestCase):
     def test_cooccurrence_probability_calculation(self):
@@ -288,6 +306,11 @@ class TestCooccurrenceProbabilityProfile(unittest.TestCase):
         interrelation_values_std = statistics.pstdev(interrelation_values)
         self.assertEqual(p.standard_interrelation_deviation(), interrelation_values_std)
 
+    def test_profile_dataframe_separation(self):
+        p = CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES)
+        q = CooccurrenceProbabilityProfile.from_cooccurrence_profile(p)
+        self.assertFalse(p.df is q.df, "The dataframe must not be the same instance, thus affecting previous profile")
+
 
 class TestPointwiseMutualInformationProfile(unittest.TestCase):
     def test_pmi_calculation(self):
@@ -299,6 +322,47 @@ class TestPointwiseMutualInformationProfile(unittest.TestCase):
                 CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES)))
         p.df.sort_index(inplace=True)
         self.assertTrue(p.df.equals(reference_profile.df))
+
+    def test_profile_dataframe_separation(self):
+        p = CooccurrenceProbabilityProfile.from_cooccurrence_profile(
+            CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES))
+        q = PointwiseMutualInformationProfile.from_cooccurrence_probability_profile(p)
+        self.assertFalse(p.df is q.df, "The dataframe must not be the same instance, thus affecting previous profile")
+
+    def test_pmi_vector_count_requirement(self):
+        p = CooccurrenceProbabilityProfile.from_cooccurrence_profile(
+            CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES))
+        p.attrs['vector_count'] = None  # destroy the default vector_count data
+        with self.assertRaises(ValueError):
+            PointwiseMutualInformationProfile.from_cooccurrence_probability_profile(p)
+        q = PointwiseMutualInformationProfile.from_cooccurrence_probability_profile(p, vector_count=100)
+        self.assertIsInstance(q, PointwiseMutualInformationProfile)
+
+    def test_mean_feature_interrelation_value(self):
+        p = PointwiseMutualInformationProfile.from_cooccurrence_probability_profile(
+            CooccurrenceProbabilityProfile.from_cooccurrence_profile(
+                CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES)))
+        tightness = p.mean_feature_interrelation_value(('a', 'b'), omit_self_relations=True)
+        self.assertEqual(tightness, p.df.at[('a', 'b'), 'value'])
+        tightness = p.mean_feature_interrelation_value(('a', 'b'), omit_self_relations=False)
+        self.assertEqual(tightness, p.df.at[('a', 'b'), 'value'] / 3)  # a,a and b,b should be both 0
+        tightness = p.mean_feature_interrelation_value(('a', 'b', 'c'))
+        self.assertEqual(
+            tightness,
+            numpy.mean([p.df.at[('a', 'b'), 'value'], p.df.at[('a', 'c'), 'value'], p.df.at[('b', 'c'), 'value']])
+        )
+
+    def test_relative_feature_tightness(self):
+        p = PointwiseMutualInformationProfile.from_cooccurrence_probability_profile(
+            CooccurrenceProbabilityProfile.from_cooccurrence_profile(
+                CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES)))
+        tightness = p.relative_feature_tightness(('a', 'b'))
+        self.assertEqual(tightness, p.df.at[('a', 'b'), 'value'])
+        tightness = p.relative_feature_tightness(('a', 'b', 'c'))
+        self.assertEqual(
+            tightness,
+            numpy.mean([p.df.at[('a', 'b'), 'value'], p.df.at[('a', 'c'), 'value'], p.df.at[('b', 'c'), 'value']])
+        )
 
 
 class TestPointwiseKLDivergenceProfile(unittest.TestCase):
@@ -319,6 +383,16 @@ class TestPointwiseKLDivergenceProfile(unittest.TestCase):
             cpp1)
         self.assertEqual(cpp1.num_raw_interrelations(), p.num_raw_interrelations())
         self.assertEqual(cpp1.num_max_interrelations(), p.num_max_interrelations())
+
+    def test_relative_feature_divergence(self):
+        cpp1 = CooccurrenceProbabilityProfile.from_cooccurrence_profile(
+            CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES))
+        p = PointwiseKLDivergenceProfile.from_cooccurrence_probability_profiles(
+            cpp1,
+            CooccurrenceProbabilityProfile.from_cooccurrence_profile(
+                CooccurrenceProfile.from_feature_lists([('a', 'b')])))
+        divergence = p.relative_feature_divergence(('a', 'b'))
+        self.assertEqual(divergence, p.df.at[('a', 'b'), 'value'])
 
 
 class TestPointwiseJeffreysDivergenceProfile(unittest.TestCase):
