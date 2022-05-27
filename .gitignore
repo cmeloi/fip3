@@ -6,7 +6,7 @@ __pycache__/
 # C extensions
 *.so
 
-# PyCharm data
+# PyCharm data_mount
 .idea/
 
 # Distribution / packaging
