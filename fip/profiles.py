@@ -48,8 +48,8 @@ class InterrelationProfile(object):
         :param kwargs: any further keyword arguments to be passed to the InterrelationProfile init
         :return: the corresponding InterrelationProfile instance
         """
-        dataframe.feature1.apply(str)
-        dataframe.feature2.apply(str)
+        dataframe.feature1 = dataframe.feature1.apply(str)
+        dataframe.feature2 = dataframe.feature2.apply(str)
         dataframe.set_index(['feature1', 'feature2'], inplace=True)
         return cls(dataframe, *args, **kwargs)
 
