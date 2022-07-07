@@ -28,6 +28,11 @@ class TestFragmentGeneration(unittest.TestCase):
         feature_smiles_radius_1_to_3.update(feature_smiles_radius_0_to_0)
         self.assertSetEqual(feature_smiles_radius_1_to_3, feature_smiles_radius_0_to_3)
 
+    def test_rdmol2morgan_feature_smiles_too_small(self):
+        mol = smiles2rdmol('CCO')  # too small for radius 2
+        feature_smiles_radius_2_to_2 = rdmol2morgan_feature_smiles(mol, radius=2, min_radius=2)
+        self.assertSetEqual(feature_smiles_radius_2_to_2, set())
+
     def test_rdmol2brics_blocs_smiles(self):
         mol = smiles2rdmol(ASPIRIN_SMILES)
         brics_blocs = rdmol2brics_blocs_smiles(mol)

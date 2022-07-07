@@ -311,6 +311,21 @@ class TestCooccurrenceProbabilityProfile(unittest.TestCase):
         q = CooccurrenceProbabilityProfile.from_cooccurrence_profile(p)
         self.assertFalse(p.df is q.df, "The dataframe must not be the same instance, thus affecting previous profile")
 
+    def test_profile_empty_input(self):
+        test_tuples_1 = ((), set(), ('a', 'b', 'x'), ('x', 'z_test'))
+        test_tuples_2 = ((), set(), ('a', 'b', 'x'), ('[CH](=O)#"{}', 'y_test'))
+        p = CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES)
+        q = CooccurrenceProfile.from_feature_lists(test_tuples_1)
+        r = CooccurrenceProfile.from_feature_lists(test_tuples_2)
+        q.add_another_cooccurrence_profile(p)
+        q.add_another_cooccurrence_profile(r)
+        z = CooccurrenceProfile.from_feature_lists(
+            [feature_set for feature_group in (test_tuples_1, test_tuples_2, FEATURE_TUPLES)
+             for feature_set in feature_group])
+        z.df.sort_index(inplace=True)
+        q.df.sort_index(inplace=True)
+        self.assertTrue(q.df.equals(z.df))
+
 
 class TestPointwiseMutualInformationProfile(unittest.TestCase):
     def test_pmi_calculation(self):
