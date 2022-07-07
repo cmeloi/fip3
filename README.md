@@ -39,7 +39,7 @@ environment, cloning this repository and adding it to the ```PYTHONPATH``` shoul
 >>> p = CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES)
 
 # Unlike any prior implementations of interrelation profiling, FIP3 is a full rework 
-# that uses sparse data representation, with lazy, on-demand imputation of missing or
+# that uses sparse data_mount representation, with lazy, on-demand imputation of missing or
 # insignificant pair values. Any explicit interrelations are mapped pairwise
 # in a MultiIndex Pandas DataFrame, and can be accessed and handled as such:
 >>> p.df
