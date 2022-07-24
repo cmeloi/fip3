@@ -38,6 +38,11 @@ class TestFragmentGeneration(unittest.TestCase):
         brics_blocs = rdmol2brics_blocs_smiles(mol)
         self.assertSetEqual(brics_blocs, ASPIRIN_BRICS)
 
+    def test_rdmol2smiles(self):
+        mol1 = smiles2rdmol(ASPIRIN_SMILES)
+        mol2 = smiles2rdmol(Chem.MolFromSmiles(ASPIRIN_SMILES))
+        self.assertEqual(rdmol2smiles(mol1), rdmol2smiles(mol2))
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -3,15 +3,20 @@
 from rdkit.Chem import AllChem as Chem
 from rdkit.Chem.BRICS import BRICSDecompose
 from rdkit.Chem.rdmolops import RemoveStereochemistry, RemoveAllHs
+from rdkit.Chem import Draw
+from rdkit.Chem.Draw import SimilarityMaps
 
 
 def smiles2rdmol(smiles):
     """Simple conversion of SMILES string into a RDKit Mol instance.
     Wrapped in case some standardization/postprocessing needed.
+    If the argument is already a RDKit Mol instance, passes it through without change.
 
-    :param smiles: SMILES string
+    :param smiles: SMILES string or an RDKit Mol instance
     :return: RDKit Mol instance
     """
+    if isinstance(smiles, Chem.rdchem.Mol):
+        return smiles
     return Chem.MolFromSmiles(smiles)
 
 
@@ -167,3 +172,37 @@ def rdmol2brics_blocs_smiles(mol, min_fragment_size=1):
     :return: SMILES of the BRICS fragments
     """
     return BRICSDecompose(mol, minFragmentSize=min_fragment_size, returnMols=False)
+
+
+def rdmol_merge_fragment_contributions(mol, fragment_contributions):
+    """Merges individual contributions of given patterns on atoms in a given molecule.
+
+    :param mol: the RDKit Mol instance to apply the contributions to
+    :param fragment_contributions: fragments mapping onto their contributions: {<RDKit Mol | SMILES pattern>: score}
+    :return: a list of merged contributions, indexed to individual atoms in the given molecule
+    """
+    fragment_contributions = {smiles2rdmol(smiles): score for smiles, score in fragment_contributions.items()}
+    atom_values = [0 for atom in mol.GetAtoms()]
+    for query, contribution in fragment_contributions.items():
+        for hit_atoms in mol.GetSubstructMatches(query):
+            for hit_atom_id in hit_atoms:
+                atom_values[hit_atom_id] += contribution
+    return atom_values
+
+
+def rdmol_visualize_fragment_contributions(mol, fragment_contributions, *, drawing_sizes=(400, 400),
+                                           similarity_map_kwargs={}):
+    """Merges individual contributions of given patterns on atoms in a given molecule, and visualizes the contributions
+    on the molecule in a SVG format.
+
+    :param mol: the RDKit Mol instance to apply the contributions to
+    :param fragment_contributions: fragments mapping onto their contributions: {<RDKit Mol | SMILES pattern>: score}
+    :param drawing_sizes: a tuple containing the declared sizes of the SVG: (size_x, size_y)
+    :param similarity_map_kwargs: dict of keyword arguments, to be passed to the rdkit GetSimilarityMapFromWeights
+    :return: an SVG text with the picture of the molecule
+    """
+    merged_contributions = rdmol_merge_fragment_contributions(mol, fragment_contributions)
+    drawing = Draw.MolDraw2DSVG(drawing_sizes[0], drawing_sizes[1])
+    SimilarityMaps.GetSimilarityMapFromWeights(mol, merged_contributions, draw2d=drawing, **similarity_map_kwargs)
+    drawing.FinishDrawing()
+    return drawing.GetDrawingText()
