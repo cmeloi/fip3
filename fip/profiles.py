@@ -236,6 +236,18 @@ class InterrelationProfile(object):
         for feature, other_feature in self.features2cooccurrences(features, omit_self_relations=omit_self_relations):
             yield self.interrelation_value(feature, other_feature)
 
+    def features_interrelation_pair_values(self, features, *, omit_self_relations=False):
+        """For a given set of features, yields all feature pairs and their interrelation values within the profile.
+        Includes imputed values.
+
+        :param features: features to look up within the profile
+        :param omit_self_relations: whether to omit self-relations in the lookup, default False.
+        :return: a generator yielding the feature pairs and their interrelation values as tuples, i.e. ((f1, f2), value)
+        """
+        # TODO: consider using df.index.intersection for this instead of loop
+        for feature, other_feature in self.features2cooccurrences(features, omit_self_relations=omit_self_relations):
+            yield (feature, other_feature), self.interrelation_value(feature, other_feature)
+
     def mean_feature_interrelation_value(self, features, *, omit_self_relations=True):
         """Returns the mean interrelation value within the profile for all features within a given feature list.
         Corresponds to feature "tightness" measure for profiles such as (Z)PMI and (Z)PKLD.

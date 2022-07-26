@@ -20,6 +20,19 @@ def smiles2rdmol(smiles):
     return Chem.MolFromSmiles(smiles)
 
 
+def smarts2rdmol(smarts):
+    """Simple conversion of SMARTS string into a RDKit Mol instance.
+    Wrapped in case some standardization/postprocessing needed.
+    If the argument is already a RDKit Mol instance, passes it through without change.
+
+    :param smiles: SMARTS string or an RDKit Mol instance
+    :return: RDKit Mol instance
+    """
+    if isinstance(smarts, Chem.rdchem.Mol):
+        return smarts
+    return Chem.MolFromSmarts(smiles)
+
+
 def rdmol2smiles(mol):
     """Simple conversion of RDKit Mol instance into a SMILES string.
     Wrapped in case some standardization/postprocessing needed.
@@ -174,34 +187,64 @@ def rdmol2brics_blocs_smiles(mol, min_fragment_size=1):
     return BRICSDecompose(mol, minFragmentSize=min_fragment_size, returnMols=False)
 
 
-def rdmol_merge_fragment_contributions(mol, fragment_contributions):
+def flatten_fragment_contributions(fragment_contributions):
+    """Takes an iterable of fragment pairs or larger sets and their contributions, such as (((f1, f2), score), ...),
+    {(f1, f2, f3): score, ...} etc. and converts them into individual (fragment, score) pairs. For example,
+    (((f1, f2), score1), ((f2, f3), score2)) would be converted into
+    ((f1, score1), (f2, score1), (f2, score2), (f3, score2)).
+
+    :param fragment_contributions: iterable of fragment pairs or larger sets and their contributions to flatten
+    :return: individual (fragment, score) tuples
+    """
+    if isinstance(fragment_contributions, dict):
+        contribution_iterator = iter(fragment_contributions.items())
+    else:
+        contribution_iterator = iter(fragment_contributions)
+    flattened_contributions = {}
+    for fragments, contribution in contribution_iterator:
+        if isinstance(fragments, str):
+            flattened_contributions[fragments] = flattened_contributions.get(fragments, 0) + contribution
+        else:
+            for fragment in fragments:
+                flattened_contributions[fragment] = flattened_contributions.get(fragment, 0) + contribution
+    return flattened_contributions
+
+
+def rdmol_merge_fragment_contributions(mol, fragment_contributions, *, average=True):
     """Merges individual contributions of given patterns on atoms in a given molecule.
 
     :param mol: the RDKit Mol instance to apply the contributions to
-    :param fragment_contributions: fragments mapping onto their contributions: {<RDKit Mol | SMILES pattern>: score}
+    :param fragment_contributions: fragments mapping onto their contributions, e.g. {<RDKit Mol | SMILES pattern>: score}
+    :param average: Averages the fragment contributions on individual atoms, instead of just summing. Default True.
     :return: a list of merged contributions, indexed to individual atoms in the given molecule
     """
-    fragment_contributions = {smiles2rdmol(smiles): score for smiles, score in fragment_contributions.items()}
+    fragment_contributions = {smarts2rdmol(smiles): score for smiles, score
+                              in flatten_fragment_contributions(fragment_contributions).items()}
     atom_values = [0 for atom in mol.GetAtoms()]
+    atom_hits = [0 for atom in mol.GetAtoms()]
     for query, contribution in fragment_contributions.items():
         for hit_atoms in mol.GetSubstructMatches(query):
             for hit_atom_id in hit_atoms:
                 atom_values[hit_atom_id] += contribution
+                atom_hits[hit_atom_id] += 1
+    if average:
+        atom_values = [value/hit_count if hit_count > 0 else 0 for value, hit_count in zip(atom_values, atom_hits)]
     return atom_values
 
 
 def rdmol_visualize_fragment_contributions(mol, fragment_contributions, *, drawing_sizes=(400, 400),
-                                           similarity_map_kwargs={}):
+                                           average=True, similarity_map_kwargs={}):
     """Merges individual contributions of given patterns on atoms in a given molecule, and visualizes the contributions
     on the molecule in a SVG format.
 
     :param mol: the RDKit Mol instance to apply the contributions to
     :param fragment_contributions: fragments mapping onto their contributions: {<RDKit Mol | SMILES pattern>: score}
     :param drawing_sizes: a tuple containing the declared sizes of the SVG: (size_x, size_y)
+    :param average: Averages the fragment contributions on individual atoms, instead of just summing. Default True.
     :param similarity_map_kwargs: dict of keyword arguments, to be passed to the rdkit GetSimilarityMapFromWeights
     :return: an SVG text with the picture of the molecule
     """
-    merged_contributions = rdmol_merge_fragment_contributions(mol, fragment_contributions)
+    merged_contributions = rdmol_merge_fragment_contributions(mol, fragment_contributions, average=average)
     drawing = Draw.MolDraw2DSVG(drawing_sizes[0], drawing_sizes[1])
     SimilarityMaps.GetSimilarityMapFromWeights(mol, merged_contributions, draw2d=drawing, **similarity_map_kwargs)
     drawing.FinishDrawing()
