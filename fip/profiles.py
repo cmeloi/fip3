@@ -507,8 +507,14 @@ class CooccurrenceProfile(InterrelationProfile):
         """
         if not isinstance(other, CooccurrenceProfile):
             raise ValueError(f"Only other CooccurrenceProfile instance can be added to this one, not {type(other)}")
-        self.df = self.df.add(other.df, fill_value=0)
-        self.df['value'] = self.df['value'].astype(int)
+        # didn't figure out how to use the 'add' two lines below to join the dataframes. .add doesn't allow for explicit
+        # 'on' in merging. Without that, [some[strings]] in the multiindex will break during .add(), iterating over
+        # strings character by character.
+        # self.df = self.df.add(other.df, fill_value=0, axis='index')
+        # self.df['value'] = self.df['value'].astype(int)
+        self.df = pandas.DataFrame(self.df.join(other.df, how='outer', lsuffix='_l', rsuffix='_r',
+                                                on=['feature1', 'feature2']).fillna(0).sum(axis=1).astype(int),
+                                   columns=['value'])
         self.attrs['vector_count'] += other.attrs['vector_count']
         return self
 
