@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fip"
+version = "2024.1.1"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+description = "FIP is a Python implementation of the Feature Interrelation Profiling cheminformatic methology."
+keywords = ["cheminformatics", "information theory", "co-occurrence"]
+authors = [{name = "Ivan Cmelo", email = "cmeloi@vscht.cz", role = "author"}]
+maintainers = [{name = "Ivan Cmelo", email = "cmeloi@vscht.cz", role = "author"}]
+dependencies = [
+    "pandas",
+    "numpy",
+    "rdkit",
+    ]
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[project.urls]
+homepage = "https://github.com/cmeloi/fip3"
+repository = "https://github.com/cmeloi/fip3"
+documentation = "https://cmeloi.github.io/fip3"
