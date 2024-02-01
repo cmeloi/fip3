@@ -1,24 +1,44 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
+requires-python = ">= 3.8"
 
 [project]
 name = "fip"
 version = "2024.1.1"
 requires-python = ">=3.10"
-license = { file = "LICENSE" }
+license = {file = "LICENSE", content-type = "text/plain"}
+readme = {file = "README.md", content-type = "text/markdown"}
 description = "FIP is a Python implementation of the Feature Interrelation Profiling cheminformatic methology."
 keywords = ["cheminformatics", "information theory", "co-occurrence"]
-authors = [{name = "Ivan Cmelo", email = "cmeloi@vscht.cz", role = "author"}]
-maintainers = [{name = "Ivan Cmelo", email = "cmeloi@vscht.cz", role = "author"}]
+authors = [{name = "Ivan Cmelo", email = "cmeloi@vscht.cz"}]
+maintainers = [{name = "Ivan Cmelo", email = "cmeloi@vscht.cz"}]
 dependencies = [
     "pandas",
     "numpy",
     "rdkit",
     ]
 
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Operating System :: OS Independent",
+  "Topic :: Scientific/Engineering :: Chemistry",
+  "Topic :: Scientific/Engineering :: Information Analysis",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Topic :: Utilities",
+]
+
 [tool.setuptools.packages.find]
 where = ["."]
+
+[tool.setuptools]
+include-package-data = true
 
 [project.urls]
 homepage = "https://github.com/cmeloi/fip3"
