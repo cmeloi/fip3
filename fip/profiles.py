@@ -196,6 +196,7 @@ class InterrelationProfile(object):
         self_relations_standard_deviation = self.standard_self_relation_deviation()
         row_zscore_partial = partial(self.row_zscore, self_relations_mean, self_relations_standard_deviation)
         self_relations_z_scores = self_relations.apply(row_zscore_partial, axis=1)
+        self.df = self.df.astype(float)
         self.df.update(self_relations_z_scores, overwrite=True)
         interrelations = self.select_raw_interrelations()
         interrelations_mean = self.mean_interrelation_value()
@@ -391,7 +392,7 @@ class InterrelationProfile(object):
         if not distance_conversion_function:
             def distance_conversion_function(x):
                 return 1 / (x + 1)
-        explicit_matrix = explicit_matrix.applymap(distance_conversion_function)
+        explicit_matrix = explicit_matrix.map(distance_conversion_function)
         if zero_self_relations:
             for feature in explicit_matrix.index.values:
                 explicit_matrix.at[feature, feature] = 0
@@ -495,7 +496,7 @@ class CooccurrenceProfile(InterrelationProfile):
         sum_raw_squared_differences = raw_interrelations['value'].apply(lambda x: (x - mean) ** 2).sum()
         sum_imputed_squared_differences = (mean ** 2) * num_imputations
         standard_deviation = numpy.sqrt((sum_raw_squared_differences + sum_imputed_squared_differences)
-                                        / max_interrelations)
+                                        / max_interrelations).iloc[0]
         return float(standard_deviation)
 
     def add_another_cooccurrence_profile(self, other):
@@ -571,7 +572,7 @@ class CooccurrenceProbabilityProfile(InterrelationProfile):
         raw_interrelations_sum = self.select_raw_interrelations()['value'].sum()
         max_interrelations = self.num_max_interrelations()
         raw_interrelations = self.select_raw_interrelations()
-        num_imputations = max_interrelations - raw_interrelations.count()
+        num_imputations = max_interrelations - raw_interrelations.count().iloc[0]
         imputed_interrelations_sum = self.attrs['imputation_probability'] * num_imputations
         combined_interrelations_sum = raw_interrelations_sum + imputed_interrelations_sum
         return float(combined_interrelations_sum / max_interrelations)
@@ -589,7 +590,7 @@ class CooccurrenceProbabilityProfile(InterrelationProfile):
         sum_raw_squared_differences = raw_interrelations['value'].apply(lambda x: (x - mean) ** 2).sum()
         sum_imputed_squared_differences = ((self.attrs['imputation_probability'] - mean) ** 2) * num_imputations
         standard_deviation = numpy.sqrt((sum_raw_squared_differences + sum_imputed_squared_differences)
-                                        / max_interrelations)
+                                        / max_interrelations).iloc[0]
         return float(standard_deviation)
 
     def get_imputation_value(self, *args):

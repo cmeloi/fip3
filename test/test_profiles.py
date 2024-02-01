@@ -2,9 +2,7 @@ import statistics
 import unittest
 from io import StringIO
 
-import numpy
 import numpy as np
-import pandas
 from pandas import DataFrame
 
 from fip.profiles import *
@@ -105,7 +103,7 @@ class TestCooccurrenceProfile(unittest.TestCase):
             f1, f2 = multiindex
             measured_self_relations += 1
             self.assertEqual(f1, f2)
-            self.assertEqual(int(value), COOCCURRENCE_COUNTS[(f1, f2)])
+            self.assertEqual(int(value.iloc[0]), COOCCURRENCE_COUNTS[(f1, f2)])
         self.assertEqual(num_self_relations, measured_self_relations)
 
     def test_raw_standard_interrelation_deviation(self):
