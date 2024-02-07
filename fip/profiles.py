@@ -481,6 +481,7 @@ class CooccurrenceProfile(InterrelationProfile):
         :return: the mean interrelation value as a float
         """
         raw_interrelations_sum = self.select_raw_interrelations()['value'].sum()
+        # TODO: redo & check for nonzero imputation values
         return raw_interrelations_sum / self.num_max_interrelations()
 
     def standard_interrelation_deviation(self):
