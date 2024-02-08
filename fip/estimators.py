@@ -6,17 +6,22 @@ from fip.profiles import CooccurrenceProfile, CooccurrenceProbabilityProfile, Po
 
 
 class PKLDivergenceEstimator(BaseEstimator, ClassifierMixin):
-    """A scikit-learn compatible estimator that wraps the pointwise Kullback-Leibler divergence variant
+    """
+    A scikit-learn compatible estimator that wraps the pointwise Kullback-Leibler divergence variant
     of the FIP methodology
     """
 
     def __init__(self):
         self.pkld_profile = None
         self.classification_cutoff = 0.0
+        self.X_ = None
+        self.y_ = None
+        self.classes_ = [0, 1]
 
     @staticmethod
     def determine_classification_cutoff(labels, pkld_profile) -> float:
-        """The default classification cutoff is the n-th percentile corresponding
+        """
+        The default classification cutoff is the n-th percentile corresponding
         to the ratio of positive to negative class labels in the training data.
 
         :param labels: list of labels
@@ -24,11 +29,15 @@ class PKLDivergenceEstimator(BaseEstimator, ClassifierMixin):
         :return: float
         """
         positive_cutoff_percentile = (sum(labels) / len(labels)) * 100
-        classification_cutoff = np.percentile(pkld_profile.interrelation_values(), positive_cutoff_percentile)
+        hit_interrelation_values = pkld_profile.features_interrelation_values(
+            pkld_profile.distinct_features(), omit_self_relations=True)
+        hit_interrelation_values = np.array(hit_interrelation_values)
+        classification_cutoff = np.percentile(hit_interrelation_values, positive_cutoff_percentile)
         return classification_cutoff
 
-    def fit(self, X, y):
-        """Fit the estimator to given data.
+    def fit(self, X, y) -> object:
+        """
+        Fit the estimator to given data.
 
         :param X: list of lists of features
         :param y: list of labels
@@ -47,14 +56,34 @@ class PKLDivergenceEstimator(BaseEstimator, ClassifierMixin):
         del negative_cooccurrence_profile
         self.pkld_profile = PointwiseKLDivergenceProfile.from_cooccurrence_probability_profiles(
             positive_cooccurrence_probability_profile, negative_cooccurrence_probability_profile)
-        self.classification_cutoff = self.determine_classification_cutoff(y, self.pkld_profile)
+        training_set_scores = [self.pkld_profile.relative_feature_divergence(flist) for flist in X]
+        positive_cutoff_percentile = (sum(y) / len(y)) * 100
+        self.classification_cutoff = np.percentile(training_set_scores, positive_cutoff_percentile)
+        self.X_ = X
+        self.y_ = y
         return self
 
-    def predict(self, X):
+    def predict(self, X) -> list:
+        """
+        Predict class labels for given data.
+
+        :param X: list of feature sets
+        :return: list of predicted class labels (1, 0)
+        """
         return [x > self.classification_cutoff for x in self.predict_proba(X)]
 
-    def predict_proba(self, X):
+    def is_fitted(self) -> bool:
+        """
+        Check if the estimator has been fitted to data.
+        """
+        return self.pkld_profile is not None
+
+    def predict_proba(self, X) -> list:
+        """
+        Predict class scores for given data.
+
+        :param X: list of feature sets
+        """
         check_is_fitted(self)
-        X = check_array(X)
-        return [self.pkld_profile.mean_feature_interrelation_values(flist, omit_self_relations=True) for flist in X]
+        return [self.pkld_profile.relative_feature_divergence(flist) for flist in X]
 

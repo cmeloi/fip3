@@ -621,9 +621,10 @@ class PointwiseMutualInformationProfile(InterrelationProfile):
         if not kwargs.get('vector_count', None):
             vector_count = cooccurrence_probability_profile.attrs['vector_count']
             if not vector_count:
-                raise ValueError("If 'vector_count' attribute is not present in the used co-occurrence probability attrs,"
-                                 "please either set the co-occurrence probability profile attrs['vector_count'],"
-                                 "or add vector_count as a keyword argument to this function")
+                raise ValueError(
+                    "If 'vector_count' attribute is not present in the used co-occurrence probability attrs,"
+                    "please either set the co-occurrence probability profile attrs['vector_count'],"
+                    "or add vector_count as a keyword argument to this function")
             kwargs['vector_count'] = vector_count
         kwargs['imputation_probability'] = cooccurrence_probability_profile.select_self_relations()['value'].min()
         imputable_standalone_probabilities = cooccurrence_probability_profile.imputable_standalone_probabilities(
