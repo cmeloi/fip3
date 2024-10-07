@@ -251,6 +251,14 @@ class TestCooccurrenceProfile(unittest.TestCase):
         self.assertTrue(p.df.equals(q.df))
 
 
+class TestMultilabelCooccurrenceProfile(unittest.TestCase):
+        def test_merge_features(self):
+            feature_lists = [('a', 'b', 'c'), ('a', 'b', 'x'), ('d', 'c'), ('b', 'a', 'a', 'x'), ('b+d', 'a', 'c')]
+            expected_features = ['a+b+c', 'a+b+x', 'c+d', 'a+b+x', 'a+b_plus_d+c']
+            for feature_list, expected_features in zip(feature_lists, expected_features):
+                self.assertEqual(MultilabelCooccurrenceProfile.merge_features(feature_list, delimiter='+'), expected_features)
+
+
 class TestCooccurrenceProbabilityProfile(unittest.TestCase):
     def test_cooccurrence_probability_calculation(self):
         reference_profile = CooccurrenceProbabilityProfile(DataFrame.from_dict(COOCCURRENCE_PROBABILITIES,
@@ -406,6 +414,10 @@ class TestPointwiseKLDivergenceProfile(unittest.TestCase):
                 CooccurrenceProfile.from_feature_lists([('a', 'b')])))
         divergence = p.relative_feature_divergence(('a', 'b'))
         self.assertEqual(divergence, p.df.at[('a', 'b'), 'value'])
+
+
+class TestMultilabelPointwiseKLDivergenceProfile(unittest.TestCase):
+    pass
 
 
 class TestPointwiseJeffreysDivergenceProfile(unittest.TestCase):

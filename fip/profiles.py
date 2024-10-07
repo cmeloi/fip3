@@ -85,6 +85,24 @@ class InterrelationProfile(object):
         row[output_column_name] = (row[input_column_name] - mean) / standard_deviation
         return row
 
+    @staticmethod
+    def merge_features(features, *, delimiter='+', delimiter_substitute='_plus_'):
+        """A consistent way to merge a list of features into a single string, for use in interrelation profiles.
+        The features are sorted and joined with a delimiter, with the delimiter_substitute used for any delimiter
+        characters present in the feature names.
+
+        feature_lists = [('a', 'b', 'c'), ('a', 'b', 'x'), ('d', 'c'), ('b', 'a', 'a', 'x'), ('b+d', 'a', 'c')]
+        expected_features = ['a+b+c', 'a+b+x', 'c+d', 'a+b+x', 'a+b_plus_d+c']
+
+        :param features: a list of features to merge
+        :param delimiter: the delimiter to use between the features. Default '+'
+        :param delimiter_substitute: the substitute for the delimiter character in feature names. Default '_plus_'
+        :return: the merged feature string
+        """
+        features = set(features)
+        return delimiter.join(
+            [feature.strip().replace(delimiter, delimiter_substitute) for feature in sorted(features)])
+
     def select_self_relations(self, selection=None):
         """Provides all feature self-relations within the profile as a DataFrame subset selection.
 
@@ -524,6 +542,32 @@ class CooccurrenceProfile(InterrelationProfile):
         return self.add_another_cooccurrence_profile(other)
 
 
+class MultilabelCooccurrenceProfile(CooccurrenceProfile):
+    @classmethod
+    def from_feature_lists(cls, feature_lists, labels, *args, **kwargs):
+        """Generate a Multi-label Co-occurrence profile from an iterable of feature lists, adding distinct
+        feature pairings observed on each provided label.
+
+        :param feature_lists: the iterable of feature lists to derive the MultilabelCooccurrenceProfile from
+        :param labels: the iterable of labels to build the MultilabelCooccurrenceProfile on
+        :param args: any further arguments to be passed to the MultilabelCooccurrenceProfile init
+        :param kwargs: any further keyword arguments to be passed to the MultilabelCooccurrenceProfile init
+        :return: the corresponding MultilabelCooccurrenceProfile instance
+        """
+        raise NotImplementedError
+
+    @staticmethod
+    def features2multilabel_cooccurrences(features, labels, *, omit_self_relations=False):
+        """Processes an iterable of features into a string set of feature co-occurrences.
+
+        :param features: an iterable of features to process, e.g. (feature1, feature2, feature4, ...)
+        :param labels: an iterable of labels to track together with observed features, e.g. (label1, label2, label3, ...)
+        :param omit_self_relations: Whether to ignore feature self-relations, i.e. (f1, f1). Default False.
+        :return: a co-occurrence generator
+        """
+        raise NotImplementedError
+
+
 class CooccurrenceProbabilityProfile(InterrelationProfile):
     """A co-occurrence probability profile, holding information about the observed probabilities for feature pair
     co-occurrences within the characterized set."""
@@ -790,6 +834,9 @@ class PointwiseKLDivergenceProfile(InterrelationProfile):
         standard_deviation = numpy.sqrt((sum_raw_squared_differences + sum_imputed_squared_differences)
                                         / max_interrelations)
         return float(standard_deviation)
+
+class MultilabelPointwiseKLDivergenceProfile(PointwiseKLDivergenceProfile):
+    pass
 
 
 class PointwiseJeffreysDivergenceProfile(PointwiseKLDivergenceProfile):
