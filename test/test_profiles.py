@@ -253,8 +253,8 @@ class TestCooccurrenceProfile(unittest.TestCase):
 
 class TestMultilabelCooccurrenceProfile(unittest.TestCase):
         def test_merge_features(self):
-            feature_lists = [('a', 'b', 'c'), ('a', 'b', 'x'), ('d', 'c'), ('b', 'a', 'a', 'x'), ('b+d', 'a', 'c')]
-            expected_features = ['a+b+c', 'a+b+x', 'c+d', 'a+b+x', 'a+b_plus_d+c']
+            feature_lists = [('a', 'b', 'c'), ('a', 'b', 'x'), ('d', 'c'), ('b', 'a', 'a', 'x'), ('b+d', 'a', 'c'), 'd+x+a+a']
+            expected_features = ['a+b+c', 'a+b+x', 'c+d', 'a+b+x', 'a+b+c+d', 'a+d+x']
             for feature_list, expected_features in zip(feature_lists, expected_features):
                 self.assertEqual(MultilabelCooccurrenceProfile.merge_features(feature_list, delimiter='+'), expected_features)
 

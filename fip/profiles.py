@@ -86,22 +86,29 @@ class InterrelationProfile(object):
         return row
 
     @staticmethod
-    def merge_features(features, *, delimiter='+', delimiter_substitute='_plus_'):
+    def merge_features(features, *, delimiter='+'):
         """A consistent way to merge a list of features into a single string, for use in interrelation profiles.
-        The features are sorted and joined with a delimiter, with the delimiter_substitute used for any delimiter
-        characters present in the feature names.
+        The features are split by delimiter, merged for uniqueness, sorted and joined again with a delimiter.
 
-        feature_lists = [('a', 'b', 'c'), ('a', 'b', 'x'), ('d', 'c'), ('b', 'a', 'a', 'x'), ('b+d', 'a', 'c')]
-        expected_features = ['a+b+c', 'a+b+x', 'c+d', 'a+b+x', 'a+b_plus_d+c']
+        ex.
+        merge_features(['a', 'b', 'c'], delimiter='+') -> 'a+b+c'
+        merge_features(['a', 'b', 'x'], delimiter='+') -> 'a+b+x'
+        merge_features(['d', 'c'], delimiter='+') -> 'c+d'
+        merge_features(['b', 'a', 'a', 'x'], delimiter='+') -> 'a+b+x'
+        merge_features(['b+d', 'a', 'c'], delimiter='+') -> 'a+b+c+d'
+        merge_features('d+x+a+a', delimiter='+') -> 'a+d+x'  # plain string input also supported
 
         :param features: a list of features to merge
         :param delimiter: the delimiter to use between the features. Default '+'
-        :param delimiter_substitute: the substitute for the delimiter character in feature names. Default '_plus_'
         :return: the merged feature string
         """
-        features = set(features)
-        return delimiter.join(
-            [feature.strip().replace(delimiter, delimiter_substitute) for feature in sorted(features)])
+        if isinstance(features, str):
+            feature_set = set(features.split(delimiter))
+        else:
+            feature_set = set()
+            for feature in features:
+                feature_set.update(feature.split(delimiter))
+        return delimiter.join(sorted(feature_set))
 
     def select_self_relations(self, selection=None):
         """Provides all feature self-relations within the profile as a DataFrame subset selection.
