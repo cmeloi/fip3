@@ -828,18 +828,32 @@ class PointwiseKLDivergenceProfile(InterrelationProfile):
         return float(standard_deviation)
 
 
-class MultilabelPointwiseKLDivergenceProfile(PointwiseKLDivergenceProfile):
-    """An interrelation profile of pointwise KL divergence values between feature vectors in which given tracked
-    features are present, relative to the feature vectors in which they are absent, e.g. pKLD of feature combinations
-    in feature vectors flagged as GR actives vs all other feature vectors.
+class MultilabelPointwiseKLDivergenceProfile(CooccurrenceProbabilityProfile):
 
-    Unlike the PointwiseKLDivergenceProfile, this profile calculates the KL divergences ad-hoc based on the stored
-    probability profiles, to avoid having a probability profile for each of the tracked/flagged features."""
     @classmethod
-    def from_cooccurrence_probability_profile(cls, cooccurrence_probability_profile, tracked_features, *args, **kwargs):
-        raise NotImplementedError
-        df = None
+    def from_cooccurrence_profile(cls, cooccurrence_profile, *args, vector_count=None, **kwargs):
+        tracked_features = kwargs.get('tracked_features', None)
+        if not tracked_features:
+            raise ValueError("Tracked features must be provided for the MultilabelPointwiseKLDivergenceProfile")
+        df = cooccurrence_profile.df
         return cls(df, *args, **kwargs)
+
+    def relative_feature_divergence(self, features):
+        """Provides relative feature divergence, i.e. relative feature tightness (RFT) measure for a given set of
+        features, against this pointwise KL divergence profile between two interrelation profiles.
+        The value quantifies how much does the feature co-occurrence combination in the provided feature vector match
+        the interrelations prevalent in the source profile (positive values) compared to those more prevalent
+        in the reference profile (negative values).
+
+        :param features: an iterable of features
+        :return: Feature divergence value as dictionary of tracked_feature:divergence
+        """
+        return self.mean_feature_interrelation_value(features, omit_self_relations=True)
+
+    def mean_feature_interrelation_value(self, features, *, omit_self_relations=True):
+        raise NotImplementedError
+
+
 
 
 class PointwiseJeffreysDivergenceProfile(PointwiseKLDivergenceProfile):
