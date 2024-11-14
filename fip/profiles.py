@@ -72,7 +72,8 @@ class InterrelationProfile(object):
                 yield feature, other_feature
         if tracked_features:
             for tracked_feature in tracked_features:
-                features.pop(features.index(tracked_feature))
+                if tracked_feature in features:
+                    features.remove(tracked_feature)
                 for i, feature in enumerate(features):
                     for other_feature in features[i+1:]:  # no self-relations here, as ('T-a', 'T-a') == ('T', 'a')
                         yield (InterrelationProfile.merge_features((tracked_feature, feature)),
@@ -582,6 +583,9 @@ class CooccurrenceProbabilityProfile(InterrelationProfile):
         df = cooccurrence_profile.df.copy(deep=True)
         df['value'] = df['value'].divide(vector_count)
         kwargs['vector_count'] = vector_count
+        tracked_features = cooccurrence_profile.attrs.get('tracked_features', None)
+        if tracked_features:
+            kwargs['tracked_features'] = tracked_features
         kwargs['imputation_probability'] = 1.0 / (vector_count + 1)  # "most-optimist" imputation value
         return cls(df, *args, **kwargs)
 
@@ -637,6 +641,44 @@ class CooccurrenceProbabilityProfile(InterrelationProfile):
         :return: the imputation value as a float
         """
         return float(self.attrs['imputation_probability'])
+
+    def tracked_features_pkld(self, feature_combination, tracked_features=None, get_contributions=False):
+        if not tracked_features:
+            tracked_features = self.attrs.get('tracked_features', None)
+        if not tracked_features:
+            raise ValueError("No tracked features provided, nor defined in the CooccurrenceProbabilityProfile")
+        pkld_dict = {}
+        for feature in tracked_features:
+            pkld_dict[feature] = self.tracked_feature_pkld(feature_combination, feature)
+        if get_contributions:
+            return pkld_dict
+        return self.aggregate_pkld_contributions(pkld_dict)
+
+    @staticmethod
+    def aggregate_pkld_contributions(pkld_dict):
+        aggregate_dict = {}
+        for feature, pkld_contributions in pkld_dict.items():
+            if len(pkld_contributions) == 0:
+                aggregate_dict[feature] = 0
+                continue
+            aggregate_dict[feature] = sum(pkld_contributions.values()) / len(pkld_contributions) # mean of all pkld values
+        return aggregate_dict
+
+    def tracked_feature_pkld(self, feature_set, tracked_feature):
+        feature_set = set(feature_set)
+        pkld_values = {}
+        if tracked_feature in feature_set:
+            feature_set.remove(tracked_feature)
+        for feature1, feature2 in self.features2cooccurrences(feature_set, omit_self_relations=True):
+            standalone_probability = self.interrelation_value(feature1, feature2)
+            tracked_probability = self.interrelation_value(self.merge_features((tracked_feature, feature1)),
+                                                            self.merge_features((tracked_feature, feature2)))
+            reference_probability = standalone_probability - tracked_probability
+            # the -tracked_probability is because pKLD is log2(pos/neg), not log2(pos/neg+pos)
+            if reference_probability == 0:  # can happen if tracked feature is always present with the feature pair
+                reference_probability = self.attrs['imputation_probability']
+            pkld_values[(feature1, feature2)] = numpy.log2(tracked_probability / reference_probability)
+        return pkld_values
 
 
 class PointwiseMutualInformationProfile(InterrelationProfile):
@@ -826,34 +868,6 @@ class PointwiseKLDivergenceProfile(InterrelationProfile):
         standard_deviation = numpy.sqrt((sum_raw_squared_differences + sum_imputed_squared_differences)
                                         / max_interrelations)
         return float(standard_deviation)
-
-
-class MultilabelPointwiseKLDivergenceProfile(CooccurrenceProbabilityProfile):
-
-    @classmethod
-    def from_cooccurrence_profile(cls, cooccurrence_profile, *args, vector_count=None, **kwargs):
-        tracked_features = kwargs.get('tracked_features', None)
-        if not tracked_features:
-            raise ValueError("Tracked features must be provided for the MultilabelPointwiseKLDivergenceProfile")
-        df = cooccurrence_profile.df
-        return cls(df, *args, **kwargs)
-
-    def relative_feature_divergence(self, features):
-        """Provides relative feature divergence, i.e. relative feature tightness (RFT) measure for a given set of
-        features, against this pointwise KL divergence profile between two interrelation profiles.
-        The value quantifies how much does the feature co-occurrence combination in the provided feature vector match
-        the interrelations prevalent in the source profile (positive values) compared to those more prevalent
-        in the reference profile (negative values).
-
-        :param features: an iterable of features
-        :return: Feature divergence value as dictionary of tracked_feature:divergence
-        """
-        return self.mean_feature_interrelation_value(features, omit_self_relations=True)
-
-    def mean_feature_interrelation_value(self, features, *, omit_self_relations=True):
-        raise NotImplementedError
-
-
 
 
 class PointwiseJeffreysDivergenceProfile(PointwiseKLDivergenceProfile):

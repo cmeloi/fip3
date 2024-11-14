@@ -342,6 +342,20 @@ class TestCooccurrenceProbabilityProfile(unittest.TestCase):
         q.df.sort_index(inplace=True)
         self.assertTrue(q.df.equals(z.df))
 
+    def test_tracked_features_pkld(self):
+        p = CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES, tracked_features=['a', 'x'])
+        self.assertEqual(p.attrs['tracked_features'], ['a', 'x'])
+        q = CooccurrenceProbabilityProfile.from_cooccurrence_profile(p)
+        self.assertEqual(q.attrs['tracked_features'], ['a', 'x'])
+        test_pkld_contributions = q.tracked_features_pkld(['a', 'b', 'c', 'd', 'x'], get_contributions=True)
+        self.assertIsInstance(test_pkld_contributions, dict)
+        self.assertEqual(len(test_pkld_contributions), 2)
+        self.assertIsInstance(test_pkld_contributions['a'], dict)
+        test_pkld_contributions_aggregated = q.tracked_features_pkld(['b', 'c'], get_contributions=False)
+        self.assertIsInstance(test_pkld_contributions_aggregated, dict)
+        self.assertEqual(len(test_pkld_contributions_aggregated), 2)
+        self.assertIsInstance(test_pkld_contributions_aggregated['a'], float)
+
 
 class TestPointwiseMutualInformationProfile(unittest.TestCase):
     def test_pmi_calculation(self):
