@@ -87,3 +87,54 @@ class PKLDivergenceEstimator(BaseEstimator, ClassifierMixin):
         check_is_fitted(self)
         return [self.pkld_profile.relative_feature_divergence(flist) for flist in X]
 
+
+class PKLDivergenceMultilabelEstimator(BaseEstimator, ClassifierMixin):
+    """
+    A scikit-learn compatible estimator that wraps the pointwise Kullback-Leibler divergence variant
+    of the FIP methodology for multilabel classification, calculated ad-hoc from cooccurrence
+    probability profile.
+    """
+
+    def __init__(self):
+        self.cooccurrence_p_profile = None
+        self.classification_cutoffs = None
+        self.X_ = None
+        self.y_ = None
+        self.classes_ = None
+
+    def fit(self, X, y) -> object:
+        """
+        Fit the estimator to given data.
+
+        :param X: list of lists of features
+        :param y: list of lists of labels
+        :return: PKLDivergenceMultilabelEstimator
+        """
+        self.classes_ = set()
+        for labels in y:
+            self.classes_.update(labels)
+        self.classes_ = list(self.classes_)
+        cooccurrence_profile = CooccurrenceProfile.from_feature_lists(
+            (set(flist).union(set(labels)) for flist, labels in zip(X, y)), tracked_features=self.classes_
+        )
+        self.cooccurrence_p_profile = CooccurrenceProbabilityProfile.from_cooccurrence_profile(cooccurrence_profile)
+        del cooccurrence_profile
+        self.X_ = X
+        self.y_ = y
+        return self
+
+    def predict_proba(self, X) -> dict:
+        """
+        Predict class scores for given data.
+
+        :param X: list of feature sets
+        """
+        check_is_fitted(self)
+        return self.cooccurrence_p_profile.tracked_features_pkld(X)
+
+
+    def is_fitted(self) -> bool:
+        """
+        Check if the estimator has been fitted to data.
+        """
+        return self.cooccurrence_p_profile is not None
