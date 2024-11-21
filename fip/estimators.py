@@ -121,7 +121,18 @@ class PKLDivergenceMultilabelEstimator(BaseEstimator, ClassifierMixin):
         del cooccurrence_profile
         self.X_ = X
         self.y_ = y
+        self.classification_cutoffs = {label: 0 for label in self.classes_}  # for now, might be changed later
         return self
+
+    def predict(self, X) -> list:
+        """
+        Predict class labels for given data.
+
+        :param X: list of feature sets
+        :return: list of predicted class labels
+        """
+        class2pkld = self.predict_proba(X)
+        return [label for label, pkld in class2pkld if pkld > self.classification_cutoffs[label]]
 
     def predict_proba(self, X) -> dict:
         """
