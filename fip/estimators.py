@@ -132,7 +132,7 @@ class PKLDivergenceMultilabelEstimator(BaseEstimator, ClassifierMixin):
         :return: list of predicted class labels
         """
         class2pkld = self.predict_proba(X)
-        return [label for label, pkld in class2pkld if pkld > self.classification_cutoffs[label]]
+        return [label for label, pkld in class2pkld.items() if pkld > self.classification_cutoffs[label]]
 
     def predict_proba(self, X) -> dict:
         """
