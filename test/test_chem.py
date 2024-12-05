@@ -3,16 +3,12 @@ import unittest
 from fip.chem import *
 
 ASPIRIN_SMILES = "O=C(C)Oc1ccccc1C(=O)O"
-ASPIRIN_MORGAN_FRAGMENTS = {'[cH][cH][cH]', '[C][O][c]([cH][cH])[c]([C])[cH]', '[cH][cH][cH][cH][c]',
-                            '[c][O][C]([CH3])=[O]', '[cH][c]([c])[O]', '[c][cH][cH][cH][cH]',
-                            '[O]=[C]([OH])[c]1[cH][cH][cH][cH][c]1[O]', '[C]=[O]', '[c][C](=[O])[OH]',
-                            '[cH][cH][c]([C](=[O])[OH])[c]([cH])[O]', '[O][c]1[cH][cH][cH][cH][c]1',
-                            '[C][O][c]1[cH][cH][cH][cH][c]1[C]', '[C][CH3]', '[OH]', '[C]', '[O]', '[cH]', '[c]',
-                            '[CH3]', '[C][c]([cH])[c]([cH][cH])[O][C]([CH3])=[O]', '[cH][cH][c]',
-                            '[CH3][C](=[O])[O][c]1[cH][cH][cH][cH][c]1[C](=[O])[OH]', '[C][c]([c])[cH][cH][cH]',
-                            '[C][O][c]', '[cH][cH][cH][c]([c])[O]', '[CH3][C](=[O])[O]', '[C][c]([c])[cH]',
-                            '[C][O][c]1[cH][cH][cH][cH][c]1[C](=[O])[OH]', '[C][c]1[c][cH][cH][cH][cH]1',
-                            '[c][c]([cH])[C](=[O])[OH]', '[cH][c]([c])[O][C]([CH3])=[O]', '[c][cH][cH]', '[C][OH]'}
+ASPIRIN_MORGAN_FRAGMENTS = {
+    'cC(=O)O', 'CC(=O)O', 'cc(O)c', 'Cc(c)c(OC(C)=O)cc', 'O=C(O)c1ccccc1O', 'COc1ccccc1C(=O)O',
+    'Cc(c)ccc', 'Cc1ccccc1', 'c', 'ccc', 'cc(OC(C)=O)c', 'ccc(C(=O)O)c(O)c', 'ccccc', 'CC(=O)Oc1ccccc1C(=O)O',
+    'cOC(C)=O', 'CO', 'COc(cc)c(C)c', 'CC', 'C', 'COc1ccccc1C', 'cccc(O)c', 'Cc(c)c', 'Oc1ccccc1', 'cc(C(=O)O)c',
+    'COc', 'O', 'C=O'}
+
 ASPIRIN_BRICS = {'[1*]C(C)=O', '[6*]C(=O)O', '[16*]c1ccccc1[16*]', '[3*]O[3*]'}
 
 
@@ -42,6 +38,23 @@ class TestFragmentGeneration(unittest.TestCase):
         mol1 = smiles2rdmol(ASPIRIN_SMILES)
         mol2 = smiles2rdmol(Chem.MolFromSmiles(ASPIRIN_SMILES))
         self.assertEqual(rdmol2smiles(mol1), rdmol2smiles(mol2))
+
+
+class TestFingerprintGenerator(unittest.TestCase):
+    def test_fingerprint_generator(self):
+        fg = FingerprintGenerator()
+        fingerprint1 = fg(ASPIRIN_SMILES+'C', 'morgan', radius=3, fpSize=1024)
+        generator1 = fg.generator
+        fingerprint2 = fg(ASPIRIN_SMILES, 'morgan', radius=3, fpSize=1024)
+        generator2 = fg.generator
+        fingerprint3 = fg(ASPIRIN_SMILES, 'rdkit', fpSize=1024)
+        generator3 = fg.generator
+        fingerprint4 = fg(ASPIRIN_SMILES, 'morgan', radius=3, fpSize=1024)
+        self.assertNotEqual(fingerprint1, fingerprint2)
+        self.assertNotEqual(fingerprint2, fingerprint3)
+        self.assertEqual(fingerprint2, fingerprint4)
+        self.assertEqual(generator1, generator2)
+        self.assertNotEqual(generator2, generator3)
 
 
 if __name__ == '__main__':

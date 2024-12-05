@@ -5,6 +5,70 @@ from rdkit.Chem.BRICS import BRICSDecompose
 from rdkit.Chem.rdmolops import RemoveStereochemistry, RemoveAllHs
 from rdkit.Chem import Draw
 from rdkit.Chem.Draw import SimilarityMaps
+from rdkit.Chem import rdFingerprintGenerator
+
+
+class FingerprintGenerator:
+    """A wrapper for RDKit fingerprint generators, allowing for easy generation of fingerprints with different settings.
+    Can instantiate a generator ad-hoc for a given type and settings, and then generate fingerprints for molecules.
+    The instantieted generator is stored and reused for the same type and settings,
+    to avoid unnecessary reinitialization.
+
+    Supported fingerprint types:
+    - 'rdkit': RDKit fingerprint
+    - 'atom_pair': Atom pair fingerprint
+    - 'morgan': Morgan fingerprint
+    - 'topological_torsion': Topological torsion fingerprint
+
+    Supported generator settings:
+    - 'rdkit': ['fpSize']
+    - 'atom_pair': ['fpSize']
+    - 'morgan': ['radius', 'fpSize', 'countSimulation', 'includeChirality', 'useBondTypes',
+                 'onlyNonzeroInvariants', 'includeRingMembership', 'countBound']
+    - 'topological_torsion': ['fpSize']
+
+    Supported fingerprint generation settings:
+    - ['ignoreAtoms', 'confId', 'customAtomInvariants', 'customBondInvariants', 'additionalOutput']
+
+    Usage:
+    generator = FingerprintGenerator()
+    fingerprint = generator(mol, type='morgan', radius=3, fpSize=1024)
+
+    """
+
+    generator_type2getter = {
+        'rdkit': rdFingerprintGenerator.GetRDKitFPGenerator,
+        'atom_pair': rdFingerprintGenerator.GetAtomPairGenerator,
+        'morgan': rdFingerprintGenerator.GetMorganGenerator,
+        'topological_torsion': rdFingerprintGenerator.GetTopologicalTorsionGenerator,
+    }
+    generator_type2args = {
+        'rdkit': ['fpSize'],
+        'atom_pair': ['fpSize'],
+        'morgan': ['radius', 'fpSize', 'countSimulation', 'includeChirality', 'useBondTypes',
+                   'onlyNonzeroInvariants', 'includeRingMembership', 'countBound'],
+        'topological_torsion': ['fpSize'],
+    }
+    get_fingerprint_args = ['ignoreAtoms', 'confId', 'customAtomInvariants', 'customBondInvariants', 'additionalOutput']
+
+    def __init__(self):
+        self.generator = None
+        self.generator_type = None
+        self.generator_args = None
+
+    def __call__(self, mol, type='morgan', **kwargs):
+        if isinstance(mol, str):
+            mol = smiles2rdmol(mol)
+        generator_init_args = {arg: kwargs[arg] for arg in self.generator_type2args[type] if arg in kwargs}
+        if not self.generator or self.generator_type != type or self.generator_args != generator_init_args:
+            self.generator = self.generator_type2getter[type](**generator_init_args)
+            self.generator_type = type
+            self.generator_args = kwargs
+        return self.generator.GetFingerprint(
+            mol, **{arg: kwargs[arg] for arg in self.get_fingerprint_args if arg in kwargs})
+
+
+FP_GENERATOR = FingerprintGenerator()
 
 
 def smiles2rdmol(smiles):
@@ -152,21 +216,25 @@ def rdmol_locations2fragments_smiles(mol, fragment_locations, min_radius=0, *, a
 
 
 def rdmol2morgan_feature_smiles(mol, radius=3, min_radius=1, *, all_bonds_explicit=False,
-                                     canonical_smiles=True, isomeric_smiles=False, all_H_explicit=True):
+                                     canonical_smiles=True, isomeric_smiles=False, all_H_explicit=False):
     """Breaks a molecule, given as an RDKit Mol instance, into a set of ECFP-like fragments with selected radius, and returns them in SMILES notation.
 
-    :param mol: the molecule for fragmenting, as RDKit Mol
+    :param mol: the molecule for fragmenting, either as RDKit Mol, or a SMILES string
     :param radius: EC fragment radius
     :param min_radius: minimal fragment radius to consider, default 0. Can be set to ignore lower-scope fragments.
     :param all_bonds_explicit: boolean indicating whether all bond orders will be explicitly stated in the output. Default False.
     :param canonical_smiles: boolean indicating whether the fragment should be attempted to make canonical. Default True.
     :param isomeric_smiles: boolean indicating whether to include stereo information in the fragments. Default False.
-    :param all_H_explicit: boolean indicating whether to explicitly include all hydrogen atoms. Default True.
+    :param all_H_explicit: boolean indicating whether to explicitly include all hydrogen atoms. Default False.
     :return: a set of SMILES strings
     """
-    bit_info = {}
     features = set()
-    Chem.GetMorganFingerprint(mol, radius, bitInfo=bit_info)
+    ao = rdFingerprintGenerator.AdditionalOutput()
+    ao.AllocateAtomCounts()
+    ao.AllocateAtomToBits()
+    ao.AllocateBitInfoMap()
+    FP_GENERATOR(mol, 'morgan', radius=radius, fpSize=1024, additionalOutput=ao)
+    bit_info = ao.GetBitInfoMap()
     for fragment_id, fragment_locations in bit_info.items():
         features.update(rdmol_locations2fragments_smiles(mol, fragment_locations, min_radius=min_radius,
                                                          all_bonds_explicit=all_bonds_explicit,
