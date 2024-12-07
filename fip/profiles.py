@@ -1,6 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from collections import Counter
 from functools import partial
+from pyexpat import features
 
 import numpy
 import pandas
@@ -74,10 +75,10 @@ class InterrelationProfile(object):
             for tracked_feature in tracked_features:
                 if tracked_feature in features:
                     features.remove(tracked_feature)
-                for i, feature in enumerate(features):
-                    for other_feature in features[i+1:]:  # no self-relations here, as ('T-a', 'T-a') == ('T', 'a')
-                        yield (InterrelationProfile.merge_features((tracked_feature, feature)),
-                               InterrelationProfile.merge_features((tracked_feature, other_feature)))
+                    for i, feature in enumerate(features):
+                        for other_feature in features[i+1:]:  # no self-relations here, as ('T-a', 'T-a') == ('T', 'a')
+                            yield (InterrelationProfile.merge_features((tracked_feature, feature)),
+                                   InterrelationProfile.merge_features((tracked_feature, other_feature)))
 
     @staticmethod
     def row_zscore(mean, standard_deviation, row, *, input_column_name='value', output_column_name='value'):
@@ -470,8 +471,8 @@ class CooccurrenceProfile(InterrelationProfile):
         processed_lists = 0
         tracked_features = kwargs.get('tracked_features', None)
         for feature_list in feature_lists:
-            cooccurrence_counter.update(CooccurrenceProfile.features2cooccurrences(
-                feature_list, tracked_features=tracked_features))
+            cooccurrences = CooccurrenceProfile.features2cooccurrences(feature_list, tracked_features=tracked_features)
+            cooccurrence_counter.update(cooccurrences)
             processed_lists += 1
         df = pandas.DataFrame(((features[0], features[1], value)
                                for features, value in cooccurrence_counter.items()),

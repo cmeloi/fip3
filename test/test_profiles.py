@@ -1,6 +1,7 @@
 import statistics
 import unittest
 from io import StringIO
+from pyexpat import features
 
 import numpy as np
 from pandas import DataFrame
@@ -11,8 +12,8 @@ FEATURE_TUPLES = (('a', 'b', 'c', 'd'), ('a', 'b', 'x'), ('c', 'd'))
 COOCCURRENCE_COUNTS = {('a', 'a'): 2, ('a', 'b'): 2, ('a', 'c'): 1, ('a', 'd'): 1, ('a', 'x'): 1,
                        ('b', 'b'): 2, ('b', 'c'): 1, ('b', 'd'): 1, ('b', 'x'): 1,
                        ('c', 'c'): 2, ('c', 'd'): 2, ('d', 'd'): 2, ('x', 'x'): 1}
-COOCCURRENCE_COUNTS_TRACKED_A = COOCCURRENCE_COUNTS.copy().update(
-    {('a+b', 'a+c'): 1, ('a+b', 'a+d'): 1, ('a+b', 'a+x'): 1, ('a+c', 'a+d'): 1})
+COOCCURRENCE_COUNTS_TRACKED_A = COOCCURRENCE_COUNTS.copy()
+COOCCURRENCE_COUNTS_TRACKED_A.update({('a+b', 'a+c'): 1, ('a+b', 'a+d'): 1, ('a+b', 'a+x'): 1, ('a+c', 'a+d'): 1})
 COOCCURRENCE_PROBABILITIES = {cooccurrence: float(count) / len(FEATURE_TUPLES)
                               for cooccurrence, count in COOCCURRENCE_COUNTS.items()}
 COOCCURRENCE_PMI = {cooccurrence: numpy.log2(probability / (
@@ -30,11 +31,38 @@ class TestCooccurrenceProfile(unittest.TestCase):
         reference_profile.df.sort_index(inplace=True)
         self.assertTrue(p.df.equals(reference_profile.df))
 
+    def test_cooccurrence_counting_explicit_count(self):
+        features = (('a', 'b'), ('a', 'b', 'x'))
+        p = CooccurrenceProfile.from_feature_lists(features, tracked_features=['x'])
+        self.assertEqual(p.attrs['vector_count'], 2)
+        self.assertEqual(p.interrelation_value('a', 'b'), 2)
+        self.assertEqual(p.interrelation_value('a', 'x'), 1)
+        self.assertEqual(p.interrelation_value('b', 'x'), 1)
+        self.assertEqual(p.interrelation_value('a+x', 'b+x'), 1)
+
+    def test_cooccurrence_counting_tracked(self):
+        p = CooccurrenceProfile.from_feature_lists(FEATURE_TUPLES, tracked_features=['a'])
+        for feature_tuple, count in COOCCURRENCE_COUNTS_TRACKED_A.items():
+            self.assertEqual(p.interrelation_value(feature_tuple[0], feature_tuple[1]), count)
+            self.assertEqual(p.interrelation_value(feature_tuple[1], feature_tuple[0]), count)
+
     def test_features2cooccurrences(self):
         features = ('c', 'a', 'b', 'a')
         reference_cooccurrences = {('a', 'a'), ('a', 'b'), ('a', 'c'), ('b', 'b'), ('b', 'c'), ('c', 'c')}
         cooccurrences = set(CooccurrenceProfile.features2cooccurrences(features))
         self.assertSetEqual(cooccurrences, reference_cooccurrences)
+
+    def test_features2cooccurrences_tracked_minimal(self):
+        features = ('a', 'b', 'x')
+        cooccurrences = set(CooccurrenceProfile.features2cooccurrences(features, tracked_features=['x']))
+        self.assertSetEqual(
+            cooccurrences, {('a+x', 'b+x'), ('a', 'a'), ('a', 'x'), ('b', 'b'), ('x', 'x'), ('b', 'x'), ('a', 'b')})
+
+    def test_features2cooccurrences_tracked_minimal_sans(self):
+        features = ('a', 'b')
+        cooccurrences = set(CooccurrenceProfile.features2cooccurrences(features, tracked_features=['x']))
+        self.assertSetEqual(
+            cooccurrences, {('a', 'a'), ('b', 'b'), ('a', 'b')})
 
     def test_features2cooccurrences_tracked(self):
         features = ('c', 'a', 'b', 'a', 'x')

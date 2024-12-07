@@ -32,7 +32,7 @@ class TestPKLDivergenceEstimator(unittest.TestCase):
 class TestPKLDivergenceMultilabelEstimator(unittest.TestCase):
     def setUp(self):
         self.test_X = [('a', 'b', 'c', 'd'), ('a', 'b', 'x'), ('c', 'd'), ('a', 'b'), ('x', 'c'), ('a', 'x')]
-        self.test_y = [('foo', 'bar'), ('foo', 'baz'), ('baz', 'bar'), ('foo', 'bar'), ('baz', 'foo'), ('baz', 'bar')]
+        self.test_y = [('foo',), ('baz', ), ('baz', 'bar'), ('bar'), ('baz'), ('baz', 'bar')]
 
     def test_fit(self):
         estimator = PKLDivergenceMultilabelEstimator()
@@ -43,10 +43,12 @@ class TestPKLDivergenceMultilabelEstimator(unittest.TestCase):
     def test_predict_proba(self):
         estimator = PKLDivergenceMultilabelEstimator()
         estimator.fit(self.test_X, self.test_y)
+        estimator.cooccurrence_p_profile.df.to_csv('/tmp/test.csv')
         for test_X in self.test_X:
             predictions = estimator.predict_proba(test_X)
             self.assertIsInstance(predictions, dict)
             self.assertEqual(len(predictions), len(estimator.classes_))
+            print(predictions)
 
 
 if __name__ == '__main__':
